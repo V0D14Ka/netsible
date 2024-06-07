@@ -15,7 +15,7 @@ setup(
     # package_dir={'': ''},
     entry_points={
         'console_scripts': [
-            'netsible=cli.main:cli',
+            'netsible=cli.main:main',
         ],
     },
     install_requires=requirements,

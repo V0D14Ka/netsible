@@ -41,8 +41,10 @@ def test():
         print("Результат команды:")
         print(output)
 
-def cli():
+
+def main():
     print("Hello world!")
 
+
 if __name__ == "__main__":
-    print("Hello world!")
+    main()
