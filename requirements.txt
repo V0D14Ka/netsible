@@ -1,3 +1,4 @@
 netmiko
 python-dotenv
 setuptools
+pathlib
