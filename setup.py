@@ -11,8 +11,7 @@ here = pathlib.Path(__file__).parent.resolve()
 setup(
     name='netsible',
     version='0.1',
-    package_dir={'': 'cli'},
-    packages=find_packages('cli'),
+    packages=find_packages(),
     entry_points={
         'console_scripts': [
             'netsible=cli.main:main',
