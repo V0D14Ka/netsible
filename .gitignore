@@ -1,3 +1,7 @@
 .idea
 .venv
 .env
+
+*.secret
+build
+lib/netsible.egg-info

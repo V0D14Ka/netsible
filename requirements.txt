@@ -3,3 +3,4 @@ python-dotenv
 setuptools
 pathlib
 argparse
+pexpect
