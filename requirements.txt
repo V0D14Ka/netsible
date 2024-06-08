@@ -2,3 +2,4 @@ netmiko
 python-dotenv
 setuptools
 pathlib
+argparse

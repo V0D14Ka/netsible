@@ -1,3 +1,4 @@
+import argparse
 import os
 
 from dotenv import load_dotenv
@@ -42,8 +43,17 @@ def test():
         print(output)
 
 
-def main(args=None):
-    print(args)
+def main():
+    parser = argparse.ArgumentParser(description='Netsible Command Line Tool')
+    parser.add_argument('--help', action='help', help='Show this help message and exit')
+    parser.add_argument('--version', action='version', version='Netsible 1.0')
+    args = parser.parse_args()
+
+    if args.help:
+        print("Help message: ... ")
+
+    if args.version:
+        print(f"Current version 0.1")
 
 
 if __name__ == "__main__":
