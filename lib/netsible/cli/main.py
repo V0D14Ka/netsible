@@ -3,6 +3,7 @@ import os
 
 from dotenv import load_dotenv
 from netmiko import ConnectHandler
+from config import version
 
 
 def ssh_connect_and_execute(device_type, hostname, port, user, password, command, keyfile=None):
@@ -46,7 +47,8 @@ def test():
 def main():
     parser = argparse.ArgumentParser(description='Netsible Command Line Tool')
     parser.add_argument('--help', action='help', help='Show this help message and exit')
-    parser.add_argument('--version', action='version', version='Netsible 1.0')
+    parser.add_argument('--version', action='version', version=version)
+    parser.add_argument('--check', action='check', version=version)
     args = parser.parse_args()
 
     if args.help:
@@ -54,6 +56,9 @@ def main():
 
     if args.version:
         print(f"Current version 0.1")
+
+    if args.check:
+        print("Help message: ... ")
 
 
 if __name__ == "__main__":
