@@ -3,7 +3,7 @@ import os
 
 from dotenv import load_dotenv
 from netmiko import ConnectHandler
-from config import version
+from cli.config import version
 
 
 def ssh_connect_and_execute(device_type, hostname, port, user, password, command, keyfile=None):
