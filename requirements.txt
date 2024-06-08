@@ -4,3 +4,4 @@ setuptools
 pathlib
 argparse
 pexpect
+colorama

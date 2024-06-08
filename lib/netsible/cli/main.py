@@ -4,6 +4,8 @@ import ping3
 import pexpect
 import subprocess
 import platform
+import colorama
+from colorama import Fore, Style
 
 from dotenv import load_dotenv
 from netmiko import ConnectHandler, NetmikoTimeoutException
@@ -42,10 +44,10 @@ def ping_ip(client_info):
     result = ping3.ping(client_info['host'])
 
     if result is False or result is None:
-        print("Ping failed.")
+        print(Fore.YELLOW + "WARNING: Can't connect to the target." + Style.RESET_ALL)
         return
 
-    print(f"Ping successful. Round-trip time: {result} ms")
+    print(Fore.GREEN + f"SUCCESS: Ping successful. Round-trip time: {result} ms" + Style.RESET_ALL)
 
 
 def task(client_info):
@@ -55,22 +57,22 @@ def task(client_info):
                                          user=client_info['user'], password=client_info['pass'], command=command)
 
         if output:
-            print("Результат команды:")
-            print(output)
+            print(Fore.GREEN + "SUCCESS: Result" + Style.RESET_ALL)
+            print(Fore.GREEN + output + Style.RESET_ALL)
 
     except NetmikoTimeoutException as e:
-        print("Связь с устройством отсутствует")
+        print(Fore.YELLOW + "WARNING: Can't connect to the target." + Style.RESET_ALL)
 
 
 def main():
     parser = argparse.ArgumentParser(description='Netsible Command Line Tool')
-    parser.add_argument('-v', '--version', action='version', version=version)
-
-    parser.add_argument('-m', '--method', choices=['test', 'task'], help='choose the method', default='task')
-    parser.add_argument('-f', '--force', action='store_true', help='force operation')
-
     parser.add_argument('host', type=str, help='target host name from hosts.txt')
-    parser.add_argument('task', type=str, help='task from to execute on the target host')
+
+    parser.add_argument('-v', '--version', action='version', version=version)
+    parser.add_argument('-m', '--method', choices=['test', 'task'], help='choose the method',
+                        default='task')
+    parser.add_argument('-f', '--force', action='store_true', help='force operation')
+    parser.add_argument('-t', '--task', type=str, help='task from to execute on the target host')
 
     args = parser.parse_args()
 
@@ -78,13 +80,17 @@ def main():
         file_path = r'C:\pass.secret' if platform.system() == 'Windows' else '/etc/netsible/hosts.txt'
         client_info = find_client_info(args.host, file_path)
 
-        if args.method == 'test':
-            ping_ip(client_info)
-        else:
+        if args.method == 'task':
+            if not args.task:
+                print(Fore.RED + 'ERROR: You should provide task in this method, add "-t <task>". ' + Style.RESET_ALL)
+                return
+
             task(client_info)
+        else:
+            ping_ip(client_info)
 
     except FileNotFoundError as e:
-        print(f"Отсутствует файл {file_path}, убедитесь в том, что вы его создали")
+        print(Fore.RED + f"ERROR: The file {file_path} is missing, make sure you have created it" + Style.RESET_ALL)
         return
 
 
