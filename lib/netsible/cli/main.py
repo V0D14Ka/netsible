@@ -46,9 +46,12 @@ def test():
 
 def main():
     parser = argparse.ArgumentParser(description='Netsible Command Line Tool')
-    parser.add_argument('--help', action='help', help='Show this help message and exit')
+
     parser.add_argument('--version', action='version', version=version)
     parser.add_argument('--check', action='check', version=version)
+    parser.add_argument('host', type=str, help='Domain name/name from hosts/ip address')
+    parser.add_argument('type', type=str, help='Inventory OS type')
+    parser.add_argument('task', type=str, help='Task to do')
     args = parser.parse_args()
 
     if args.help:
