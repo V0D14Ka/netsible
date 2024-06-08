@@ -1,1 +1,1 @@
-from lib.netsible.cli.main import *
+from netsible.cli.main import *
