@@ -42,8 +42,8 @@ def test():
         print(output)
 
 
-def main():
-    print("Hello world!")
+def main(args=None):
+    print(args)
 
 
 if __name__ == "__main__":
