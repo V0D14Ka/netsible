@@ -49,7 +49,6 @@ def ping_ip(client_info, only_ip=False):
 
 
 def task(client_info, command='uptime'):
-
     try:
         output = ssh_connect_and_execute(device_type=client_info['type'], hostname=client_info['host'],
                                          user=client_info['user'], password=client_info['pass'], command=command)
@@ -118,9 +117,11 @@ class CLI:
         self.parse()
 
         conf_dir_path = self.args.path if self.args.path is not None else str(Path('~/.netsible').expanduser())
+        print(conf_dir_path)
 
         try:
-            client_info = find_client_info(self.args.host, conf_dir_path + '\hosts.txt')
+            inv_file = "\hosts.txt" if platform.system() == 'Windows' else "/hosts"
+            client_info = find_client_info(self.args.host, conf_dir_path + inv_file)
 
             if self.args.method == 'uptime':
                 # if not self.args.task:
@@ -144,5 +145,6 @@ def main(args=None):
 
 if __name__ == "__main__":
     # print(version('jinja2') < "3.0.0")
-    ping_ip('ya.ru', True)
+    # ping_ip('ya.ru', True)
     # test('client1')
+    print(str(Path('~/.netsible').expanduser()))
