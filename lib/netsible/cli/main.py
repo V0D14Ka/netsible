@@ -90,7 +90,7 @@ class CLI:
                     # TODO validation
             except UnicodeError:
                 Display.error('Command line args are not in utf-8, unable to continue.  '
-                      'Netsible currently only understands utf-8')
+                              'Netsible currently only understands utf-8')
             else:
                 cli = cls(args)
                 cli.run()
@@ -105,7 +105,7 @@ class CLI:
         self.parser.add_argument('host', type=str, help='target host name from hosts.txt')
 
         self.parser.add_argument('-v', '--version', action='version', version=ver)
-        self.parser.add_argument('-m', '--method', choices=['test', 'task'], help='choose the method',
+        self.parser.add_argument('-m', '--method', choices=['ping', 'uptime'], help='choose the method',
                                  default='task')
         self.parser.add_argument('-f', '--force', action='store_true', help='force operation')
         self.parser.add_argument('-t', '--task', type=str, help='task from to execute on the target host')
@@ -122,10 +122,10 @@ class CLI:
         try:
             client_info = find_client_info(self.args.host, conf_dir_path + '\hosts.txt')
 
-            if self.args.method == 'task':
-                if not self.args.task:
-                    Display.error('You should provide task in this method, add "-t <task>".')
-                    return
+            if self.args.method == 'uptime':
+                # if not self.args.task:
+                #     Display.error('You should provide task in this method, add "-t <task>".')
+                #     return
 
                 task(client_info)
             else:
