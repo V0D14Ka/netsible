@@ -6,7 +6,9 @@ import platform
 import errno
 from netmiko import ConnectHandler, NetmikoTimeoutException
 from netsible.cli.config import version as ver
+from netsible.cli.config import methods_cisco_dir
 from netsible.utils.utils import Display
+
 
 
 def ssh_connect_and_execute(device_type, hostname, user, password, command, keyfile=None, port=22):
@@ -104,8 +106,8 @@ class CLI:
         self.parser.add_argument('host', type=str, help='target host name from hosts.txt')
 
         self.parser.add_argument('-v', '--version', action='version', version=ver)
-        self.parser.add_argument('-m', '--method', choices=['ping', 'uptime', 'cisco'], help='choose the method',
-                                 default='ping')
+        self.parser.add_argument('-m', '--method', choices=['ping', 'uptime', 'int', 'vlan', 'config',
+                                                            'lldp', 'route'], help='choose the method', default='ping')
         self.parser.add_argument('-f', '--force', action='store_true', help='force operation')
         self.parser.add_argument('-t', '--task', type=str, help='task from to execute on the target host')
         self.parser.add_argument('-p', '--path', type=str, help='custom config dir path')
@@ -123,16 +125,13 @@ class CLI:
             inv_file = "\hosts.txt" if platform.system() == 'Windows' else "/hosts"
             client_info = find_client_info(self.args.host, conf_dir_path + inv_file)
 
-            if self.args.method == 'uptime':
-                # if not self.args.task:
-                #     Display.error('You should provide task in this method, add "-t <task>".')
-                #     return
+            cmd = methods_cisco_dir[self.args.method]
 
-                task(client_info)
-            elif self.args.method == 'cisco':
-                task(client_info, 'sh ip int br')
-            else:
+            if self.args.method == 'ping':
                 ping_ip(client_info)
+            else:
+                task(client_info, cmd)
+
 
         except FileNotFoundError as e:
             Display.error(f'The path {conf_dir_path} is missing or empty, make sure you have created needed files.')
@@ -145,6 +144,6 @@ def main(args=None):
 
 if __name__ == "__main__":
     # print(version('jinja2') < "3.0.0")
-    # ping_ip('ya.ru', True)
+    ping_ip('ya.ru', True)
     # test('client1')
-    print(str(Path('~/.netsible').expanduser()))
+    # print(str(Path('~/.netsible').expanduser()))
