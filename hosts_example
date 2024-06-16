@@ -1,0 +1,11 @@
+# name - алиас для хоста.
+# host - dns или ip хоста.
+# type - ОС хоста.
+# user - пользователь, под которым будет выполнен вход в систему.
+# pass - пароль пользователя (можно указать в ходе выполнения программы).
+
+name=client1 host=192.168.1.1 type=linux user=test pass=test
+name=client2 host=192.168.1.2 type=linux user=test pass=test
+name=client3 host=192.168.1.3 type=linux user=test pass=test
+name=client4 host=192.168.1.4 type=linux user=test pass=test
+name=client5 host=192.168.1.5 type=linux user=test pass=test
