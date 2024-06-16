@@ -6,3 +6,4 @@ argparse
 pexpect
 colorama
 jinja2
+ping3
