@@ -48,8 +48,8 @@ def ping_ip(client_info, only_ip=False):
     Display.success(f"Ping successful. Round-trip time: {result} ms")
 
 
-def task(client_info):
-    command = 'uptime'
+def task(client_info, command='uptime'):
+
     try:
         output = ssh_connect_and_execute(device_type=client_info['type'], hostname=client_info['host'],
                                          user=client_info['user'], password=client_info['pass'], command=command)
@@ -105,13 +105,13 @@ class CLI:
         self.parser.add_argument('host', type=str, help='target host name from hosts.txt')
 
         self.parser.add_argument('-v', '--version', action='version', version=ver)
-        self.parser.add_argument('-m', '--method', choices=['ping', 'uptime'], help='choose the method',
-                                 default='task')
+        self.parser.add_argument('-m', '--method', choices=['ping', 'uptime', 'cisco'], help='choose the method',
+                                 default='ping')
         self.parser.add_argument('-f', '--force', action='store_true', help='force operation')
         self.parser.add_argument('-t', '--task', type=str, help='task from to execute on the target host')
         self.parser.add_argument('-p', '--path', type=str, help='custom config dir path')
 
-        self.args = self.parser.parse_args()
+        self.args = self.parser.parse_args(self.args[1:])
 
     def run(self):
 
@@ -128,6 +128,8 @@ class CLI:
                 #     return
 
                 task(client_info)
+            elif self.args.method == 'cisco':
+                task(client_info, 'sh ip int br')
             else:
                 ping_ip(client_info)
 

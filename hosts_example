@@ -1,6 +1,6 @@
 # name - алиас для хоста.
 # host - dns или ip хоста.
-# type - ОС хоста.
+# type - ОС хоста, список осей доступен на https://github.com/ktbyers/netmiko/blob/master/netmiko/ssh_dispatcher.py.
 # port - ssh порт.
 # user - пользователь, под которым будет выполнен вход в систему.
 # pass - пароль пользователя (можно указать в ходе выполнения программы).
