@@ -1,5 +1,7 @@
 import os
 import time
+
+import ping3
 from colorama import Fore, Style
 
 
@@ -32,3 +34,13 @@ class Display:
         else:
             print(Fore.GREEN + "SUCCESS: %0.5f [%s]: \n%s" % (time.time(), host, msg) + Style.RESET_ALL)
 
+
+def ping_ip(client_info, only_ip=False):
+    host = client_info['host'] if not only_ip else client_info
+    result = ping3.ping(host)
+
+    if result is False or result is None:
+        Display.warning("Can't connect to the target.")
+        return
+
+    Display.success(f"Ping successful. Round-trip time: {result} ms")

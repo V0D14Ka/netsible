@@ -1,75 +1,25 @@
 import argparse
 import sys
 from pathlib import Path
-import ping3
 import platform
 import errno
 
 import yaml
-from netmiko import ConnectHandler, NetmikoTimeoutException
 from netsible.cli.config import version as ver
-from netsible.cli.config import methods_cisco_dir
 from netsible.utils.utils import Display
 from netsible.cli import MODULES
 
-
-def ssh_connect_and_execute(device_type, hostname, user, password, command, keyfile=None, port=22):
-    try:
-        device = {
-            'device_type': device_type,
-            'host': hostname,
-            'port': port,
-            'username': user,
-            'password': password,
-        }
-
-        connection = ConnectHandler(**device)
-        out = connection.send_command(command)
-        connection.disconnect()
-
-        return out
-    except Exception as e:
-        raise e
+from netsible.utils.utils import ping_ip
 
 
-def find_client_info(client_name, file_path):
-    with open(file_path, 'r') as file:
-        for line in file:
-            client_info = dict(part.split('=') for part in line.strip().split(' '))
-            if client_info.get('name') == client_name:
-                return client_info
-    return None
-
-
-def ping_ip(client_info, only_ip=False):
-    host = client_info['host'] if not only_ip else client_info
-    result = ping3.ping(host)
-
-    if result is False or result is None:
-        Display.warning("Can't connect to the target.")
-        return
-
-    Display.success(f"Ping successful. Round-trip time: {result} ms")
-
-
-def task(client_info, command='uptime'):
-    try:
-        output = ssh_connect_and_execute(device_type=client_info['type'], hostname=client_info['host'],
-                                         user=client_info['user'], password=client_info['pass'], command=command)
-
-        if output:
-            Display.success(output)
-
-    except NetmikoTimeoutException as e:
-        Display.warning("Can't connect to the target.")
-
-
-def validate_yaml_file(file_path, inv_file):
+def start_task(file_path, inv_file):
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
-            yaml.safe_load(file)
-        print(f"{file_path} is valid YAML.")
+            playbook = yaml.safe_load(file)
+
+        Display.debug(f"{file_path} is valid YAML.")
         parse_yaml(file_path, inv_file)
+
     except yaml.YAMLError as exc:
         print(f"Error in YAML file {file_path}:")
         if hasattr(exc, 'problem_mark'):
@@ -77,8 +27,13 @@ def validate_yaml_file(file_path, inv_file):
             print(f"  Error position: Line {mark.line + 1}, Column {mark.column + 1}")
         print(exc)
 
+    except ValueError as ve:
+        print(f"Validation error: {ve}")
+
 
 def parse_yaml(file_path, inv_file):
+    tasks_to_run = []
+
     with open(file_path, 'r') as file:
         playbook_yaml = file.read()
         playbook = yaml.safe_load(playbook_yaml)
@@ -109,9 +64,28 @@ def parse_yaml(file_path, inv_file):
                             Display.error(f"Can't get module name or params. Check your task file")
                             continue
 
-                        Display.debug(f"Running task '{task_name}' using module '{module}' with params {params}")
-                        (MODULES.get(module))().run(task_name=task_name, client_info=client_i,
-                                                    module=module, params=params)
+                        tasks_to_run.append({
+                            'task_name': task_name,
+                            'module': module,
+                            'params': params,
+                            'client_info': client_i
+                        })
+
+    for i in tasks_to_run:
+        if i['module'] not in MODULES:
+            Display.error(f"Module '{i['module']}' is not in the list of available modules.")
+            return
+
+        params = MODULES.get(i['module']).static_params()
+        for j in i['params'].items():
+            if j[0] not in params:
+                Display.error(f"Incorrect param - '{j[0]}' in module - '{i['module']}'.")
+                return
+
+    for i in tasks_to_run:
+        Display.debug(f"Running task '{i['task_name']}' using module '{i['module']}' with params {i['params']}")
+        (MODULES.get(module))().run(task_name=i['task_name'], client_info=i['client_info'],
+                                    module=i['module'], params=i['params'])
 
 
 class TaskCLI:
@@ -151,7 +125,6 @@ class TaskCLI:
         except KeyboardInterrupt:
             Display.error("User interrupted execution")
 
-        # sys.exit(exit_code)
 
     def parse(self):
         self.parser = argparse.ArgumentParser(description='Netsible-task Command Line Tool')
@@ -173,16 +146,11 @@ class TaskCLI:
             task_file = conf_dir_path + fr"\{self.args.task}" \
                 if platform.system() == 'Windows' else fr"/{self.args.task}"
 
-            # print(inv_file)
-            # print(task_file)
-
-            validate_yaml_file(task_file, conf_dir_path + inv_file)
+            start_task(task_file, conf_dir_path + inv_file)
 
         except FileNotFoundError as e:
             Display.error(f'The path {conf_dir_path} is missing or empty, make sure you have created needed files.')
             return
-            # raise e
-    # def init_task(self):
 
 
 def main(args=None):
@@ -190,7 +158,4 @@ def main(args=None):
 
 
 if __name__ == "__main__":
-    # print(version('jinja2') < "3.0.0")
     ping_ip('ya.ru', True)
-    # test('client1')
-    # print(str(Path('~/.netsible').expanduser()))

@@ -1,7 +1,7 @@
 from netsible.modules import BasicModule
 
 
-class Cisco(BasicModule):
+class UpdateInt(BasicModule):
 
     def run(self, **kwargs):
         super().run(**kwargs)
