@@ -54,13 +54,6 @@ def parse_yaml(file_path, inv_file):
 
                     if module != 'name':
 
-                        if task_name is None:
-                            Display.warning(f"Can't get host task name.")
-
-                        if module is None or params is None:
-                            Display.error(f"Can't get module name or params. Check your task file")
-                            continue
-
                         tasks_to_run.append({
                             'task_name': task_name,
                             'module': module,
@@ -75,6 +68,9 @@ def validate_and_run(tasks_to_run, hosts):
         if i['client_info'] is None:
             Display.error(f"Critical error. Can't get host '{hosts}'.")
             return
+
+        if i['task_name'] is None:
+            Display.warning(f"Can't get host task name.")
 
         if i['module'] not in MODULES:
             Display.error(f"Module '{i['module']}' is not in the list of available modules.")
