@@ -1,0 +1,7 @@
+- name: 'Cisco script'
+  hosts: cisco_node
+  tasks:
+    - name: "Cisco set ip int task"
+      updateint:
+        int: "e0/1"
+        ip: "192.168.1.10/24"

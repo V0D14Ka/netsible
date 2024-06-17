@@ -5,5 +5,5 @@
 *.secret
 build
 lib/netsible.egg-info
-bib.yaml
+task_example.yaml
 test.py
