@@ -5,6 +5,7 @@
 - [Установка](#установка)
 - [Разовое использование](#использование)
 - [Использование задач](#использование_задач)
+- [Примеры](#примеры)
 
 ## Установка CLI<a name="установка"></a>
 
@@ -57,3 +58,29 @@ netsible-task -t <task_file.yaml> -p <path_to_custom_dir>
 Где:
  - ``task_file.yaml`` - файл с описанием задач и хостов.
  - ``path_to_custom_dir`` - путь до пользовательской директории с конфигурационными файлами netsible.
+
+## Примеры <a name="примеры"></a>
+
+- **ping**<br>
+  input:
+  ```bash
+  netsible <target> -m ping
+  ```
+  output:
+  ```bash
+  SUCCESS: 1718620994.87460:
+  Ping successful. Round-trip time: 0.0010001659393310547 ms
+  ```
+
+- **uptime** <br>
+  input:
+  ```bash
+  netsible <target> -m uptime
+  ```
+  output:
+  ```bash
+  SUCCESS: 1718620988.32537: 
+
+  10:43:09 up 16 days,  1:55,  1 user,  load average: 0,94, 0,87, 0,84
+  ```
+
