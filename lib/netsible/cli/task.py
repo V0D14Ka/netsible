@@ -18,7 +18,8 @@ def start_task(file_path, inv_file):
             playbook = yaml.safe_load(file)
 
         Display.debug(f"{file_path} is valid YAML.")
-        parse_yaml(file_path, inv_file)
+        tasks_to_run, hosts = parse_yaml(file_path, inv_file)
+        validate_and_run(tasks_to_run, hosts)
 
     except yaml.YAMLError as exc:
         print(f"Error in YAML file {file_path}:")
@@ -46,10 +47,6 @@ def parse_yaml(file_path, inv_file):
                 if client_info.get('name') == hosts:
                     client_i = client_info
 
-        if client_i is None:
-            Display.error(f"Critical error. Can't get host '{hosts}'.")
-            return
-
         for play in playbook:
             for task in play['tasks']:
                 task_name = task['name']
@@ -70,8 +67,15 @@ def parse_yaml(file_path, inv_file):
                             'params': params,
                             'client_info': client_i
                         })
+    return tasks_to_run, hosts
 
+
+def validate_and_run(tasks_to_run, hosts):
     for i in tasks_to_run:
+        if i['client_info'] is None:
+            Display.error(f"Critical error. Can't get host '{hosts}'.")
+            return
+
         if i['module'] not in MODULES:
             Display.error(f"Module '{i['module']}' is not in the list of available modules.")
             return
@@ -84,7 +88,7 @@ def parse_yaml(file_path, inv_file):
 
     for i in tasks_to_run:
         Display.debug(f"Running task '{i['task_name']}' using module '{i['module']}' with params {i['params']}")
-        (MODULES.get(module))().run(task_name=i['task_name'], client_info=i['client_info'],
+        (MODULES.get(i['module']))().run(task_name=i['task_name'], client_info=i['client_info'],
                                     module=i['module'], params=i['params'])
 
 
@@ -124,7 +128,6 @@ class TaskCLI:
 
         except KeyboardInterrupt:
             Display.error("User interrupted execution")
-
 
     def parse(self):
         self.parser = argparse.ArgumentParser(description='Netsible-task Command Line Tool')
