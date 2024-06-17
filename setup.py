@@ -15,6 +15,7 @@ setup(
     entry_points={
         'console_scripts': [
             'netsible=netsible.cli.main:main',
+            'netsible-task=netsible.cli.task:main'
         ],
     },
     install_requires=requirements,

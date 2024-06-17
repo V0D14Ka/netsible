@@ -8,3 +8,9 @@ methods_cisco_dir = {
     'uptime': 'uptime',
     'config': 'sh running-config'
 }
+
+methods_linux_dir = {
+    'ip': 'ipconfig',
+    'uptime': 'uptime',
+    'int_config': 'sh running-config'
+}

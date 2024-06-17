@@ -4,11 +4,13 @@ from pathlib import Path
 import ping3
 import platform
 import errno
+
+import yaml
 from netmiko import ConnectHandler, NetmikoTimeoutException
 from netsible.cli.config import version as ver
 from netsible.cli.config import methods_cisco_dir
 from netsible.utils.utils import Display
-
+from netsible.cli import MODULES
 
 
 def ssh_connect_and_execute(device_type, hostname, user, password, command, keyfile=None, port=22):
@@ -62,7 +64,57 @@ def task(client_info, command='uptime'):
         Display.warning("Can't connect to the target.")
 
 
-class CLI:
+def validate_yaml_file(file_path, inv_file):
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            yaml.safe_load(file)
+        print(f"{file_path} is valid YAML.")
+        parse_yaml(file_path, inv_file)
+    except yaml.YAMLError as exc:
+        print(f"Error in YAML file {file_path}:")
+        if hasattr(exc, 'problem_mark'):
+            mark = exc.problem_mark
+            print(f"  Error position: Line {mark.line + 1}, Column {mark.column + 1}")
+        print(exc)
+
+
+def parse_yaml(file_path, inv_file):
+    with open(file_path, 'r') as file:
+        playbook_yaml = file.read()
+        playbook = yaml.safe_load(playbook_yaml)
+        hosts = playbook[0]['hosts']
+        client_i = None
+
+        with open(inv_file, 'r') as inv:
+            for line in inv:
+                client_info = dict(part.split('=') for part in line.strip().split(' '))
+                if client_info.get('name') == hosts:
+                    client_i = client_info
+
+        if client_i is None:
+            Display.error(f"Critical error. Can't get host '{hosts}'.")
+            return
+
+        for play in playbook:
+            for task in play['tasks']:
+                task_name = task['name']
+                for module, params in task.items():
+
+                    if module != 'name':
+
+                        if task_name is None:
+                            Display.warning(f"Can't get host task name.")
+
+                        if module is None or params is None:
+                            Display.error(f"Can't get module name or params. Check your task file")
+                            continue
+
+                        Display.debug(f"Running task '{task_name}' using module '{module}' with params {params}")
+                        (MODULES.get(module))().run(task_name=task_name, client_info=client_i,
+                                                    module=module, params=params)
+
+
+class TaskCLI:
     def __init__(self, args):
 
         if not args:
@@ -102,15 +154,11 @@ class CLI:
         # sys.exit(exit_code)
 
     def parse(self):
-        self.parser = argparse.ArgumentParser(description='Netsible Command Line Tool')
-        self.parser.add_argument('host', type=str, help='target host name from hosts.txt')
-
+        self.parser = argparse.ArgumentParser(description='Netsible-task Command Line Tool')
         self.parser.add_argument('-v', '--version', action='version', version=ver)
-        self.parser.add_argument('-m', '--method', choices=['ping', 'uptime', 'int', 'vlan', 'config',
-                                                            'lldp', 'route'], help='choose the method', default='ping')
-        self.parser.add_argument('-f', '--force', action='store_true', help='force operation')
-        self.parser.add_argument('-t', '--task', type=str, help='task from to execute on the target host')
-        self.parser.add_argument('-p', '--path', type=str, help='custom config dir path')
+        self.parser.add_argument('-t', '--task', required=True,
+                                 type=str, help='path to file with task')
+        self.parser.add_argument('-p', '--path', type=str, help='custom netsible dir path')
 
         self.args = self.parser.parse_args(self.args[1:])
 
@@ -119,26 +167,26 @@ class CLI:
         self.parse()
 
         conf_dir_path = self.args.path if self.args.path is not None else str(Path('~/.netsible').expanduser())
-        print(conf_dir_path)
 
         try:
-            inv_file = "\hosts.txt" if platform.system() == 'Windows' else "/hosts"
-            client_info = find_client_info(self.args.host, conf_dir_path + inv_file)
+            inv_file = r"\hosts.txt" if platform.system() == 'Windows' else r"/hosts"
+            task_file = conf_dir_path + fr"\{self.args.task}" \
+                if platform.system() == 'Windows' else fr"/{self.args.task}"
 
-            if self.args.method == 'ping':
-                ping_ip(client_info)
-            else:
-                cmd = methods_cisco_dir[self.args.method]
-                task(client_info, cmd)
+            # print(inv_file)
+            # print(task_file)
 
+            validate_yaml_file(task_file, conf_dir_path + inv_file)
 
         except FileNotFoundError as e:
             Display.error(f'The path {conf_dir_path} is missing or empty, make sure you have created needed files.')
             return
+            # raise e
+    # def init_task(self):
 
 
 def main(args=None):
-    CLI.cli_start(args)
+    TaskCLI.cli_start(args)
 
 
 if __name__ == "__main__":

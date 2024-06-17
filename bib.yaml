@@ -1,0 +1,7 @@
+- name: 'Cisco script'
+  hosts: cisco_nodes
+  tasks:
+    - name: "Cisco test task"
+      cisco:
+        path: "/etc/resolv.conf"
+        line: "nameserver 10.1.250.10"
