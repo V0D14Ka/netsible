@@ -64,28 +64,28 @@ def parse_yaml(file_path, inv_file):
 
 
 def validate_and_run(tasks_to_run, hosts):
-    for i in tasks_to_run:
-        if i['client_info'] is None:
+    for task in tasks_to_run:
+        if task['client_info'] is None:
             Display.error(f"Critical error. Can't get host '{hosts}'.")
             return
 
-        if i['task_name'] is None:
+        if task['task_name'] is None:
             Display.warning(f"Can't get host task name.")
 
-        if i['module'] not in MODULES:
-            Display.error(f"Module '{i['module']}' is not in the list of available modules.")
+        if task['module'] not in MODULES:
+            Display.error(f"Module '{task['module']}' is not in the list of available modules.")
             return
 
-        params = MODULES.get(i['module']).static_params()
-        for j in i['params'].items():
-            if j[0] not in params:
-                Display.error(f"Incorrect param - '{j[0]}' in module - '{i['module']}'.")
+        params = MODULES.get(task['module']).static_params()
+        for param in task['params'].items():
+            if param[0] not in params:
+                Display.error(f"Incorrect param - '{param[0]}' in module - '{task['module']}'.")
                 return
 
-    for i in tasks_to_run:
-        Display.debug(f"Running task '{i['task_name']}' using module '{i['module']}' with params {i['params']}")
-        (MODULES.get(i['module']))().run(task_name=i['task_name'], client_info=i['client_info'],
-                                    module=i['module'], params=i['params'])
+    for task in tasks_to_run:
+        Display.debug(f"Running task '{task['task_name']}' using module '{task['module']}' with params {task['params']}")
+        (MODULES.get(task['module']))().run(task_name=task['task_name'], client_info=task['client_info'],
+                                            module=task['module'], params=task['params'])
 
 
 class TaskCLI:
