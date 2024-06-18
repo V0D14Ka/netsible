@@ -180,7 +180,8 @@ class UpdateInt(BasicModule):
                 'verbose': True,  # включить вывод подробной информации о подключении
             }
 
-            template = Template(module_template.get(device_type))
+            _, mt = self.static_params()
+            template = Template(mt.get(device_type))
             output = template.render(self.params)
             commands = [line for line in output.splitlines() if line.strip()]
 
