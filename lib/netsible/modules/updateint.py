@@ -3,6 +3,7 @@ import os
 from netmiko import ConnectHandler
 from netsible.modules import BasicModule
 from jinja2 import Template
+from netsible.utils.utils import Display
 
 template_cisco = '''
 interface {{ interface_name }}
@@ -108,7 +109,8 @@ class UpdateInt(BasicModule):
             with ConnectHandler(**device) as net_connect:
                 net_connect.enable()
                 output = net_connect.send_config_set(commands)
-                print(output)
+                Display.success(f"-------------- Device {device['host']} --------------\n {output}\n -------------- "
+                                f"END --------------")
 
         except Exception as e:
             raise e
