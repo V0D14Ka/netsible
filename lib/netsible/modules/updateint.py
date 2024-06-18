@@ -157,7 +157,7 @@ class UpdateInt(BasicModule):
                        "shutdown"]
         module_template = {
             'cisco_ios': template_cisco,
-            'microtik_routeros': template_router_os
+            'mikrotik_routeros': template_router_os
         }
         return dict_params, module_template
 
