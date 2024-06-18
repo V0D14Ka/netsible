@@ -1,7 +1,10 @@
 - name: 'Cisco script'
-  hosts: cisco_node
+  hosts: cisco_node                                   # Хосты
+  sensitivity: "yes"                                  # Чувствительность к ошибкам при выполнении
   tasks:
-    - name: "Cisco set ip int task"
-      updateint:
-        int: "e0/1"
-        ip: "192.168.1.10/24"
+    - name: "Cisco set ip int task"                     # Название таски
+      updateint:                                        # Название модуля
+        interface_name: "e0/1"                            # Название интерфейса
+        description: "*** some desc ***"                  # Описание
+        ip_address: "101.1.250.12"                        # IP-address
+        subnet_mask: "255.255.255.0"                      # Маска
