@@ -107,7 +107,7 @@ template_router_os = '''
 {% endif %}
 
 {% if ip_address is defined and subnet_mask is defined %}
- /ip add address={{ ip_address }}/{{ subnet_mask }} interface={{ interface_name }}
+ /ip address add address={{ ip_address }}/{{ subnet_mask }} interface={{ interface_name }}
 {% endif %}
 
 {% if encapsulation is defined %}
