@@ -22,14 +22,14 @@ def start_task(file_path, inv_file):
         validate_and_run(tasks_to_run, hosts, sensitivity)
 
     except yaml.YAMLError as exc:
-        print(f"Error in YAML file {file_path}:")
+        Display.error(f"Error in YAML file {file_path}:")
         if hasattr(exc, 'problem_mark'):
             mark = exc.problem_mark
-            print(f"  Error position: Line {mark.line + 1}, Column {mark.column + 1}")
-        print(exc)
+            Display.error(f"Error position: Line {mark.line + 1}, Column {mark.column + 1}")
+        Display.error(exc)
 
     except ValueError as ve:
-        print(f"Validation error: {ve}")
+        Display.error(f"Validation error: {ve}")
 
 
 def parse_yaml(file_path, inv_file):
