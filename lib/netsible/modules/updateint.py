@@ -141,8 +141,9 @@ class UpdateInt(BasicModule):
 
     def run(self, **kwargs):
         super().run(**kwargs)
-        self.ssh_connect_and_execute(self.client_info['type'], self.client_info['host'],
-                                     self.client_info['user'], self.client_info['pass'])
+        return self.ssh_connect_and_execute(self.client_info['type'], self.client_info['host'],
+                                            self.client_info['user'], self.client_info['pass'],
+                                            self.sensitivity)
 
     @staticmethod
     def static_params():
@@ -161,7 +162,8 @@ class UpdateInt(BasicModule):
         commands = [line for line in output.splitlines() if line.strip()]
         print(commands)
 
-    def ssh_connect_and_execute(self, device_type, hostname, user, password, command=None, keyfile=None, port=22):
+    def ssh_connect_and_execute(self, device_type, hostname, user, password, sensitivity, command=None, keyfile=None,
+                                port=22):
 
         try:
             device = {
@@ -178,7 +180,8 @@ class UpdateInt(BasicModule):
             template = Template(mt.get(device_type))
             output = template.render(self.params)
             commands = [line for line in output.splitlines() if line.strip()]
-            print(commands)
+            # print(commands)
+            print(sensitivity)
 
             with ConnectHandler(**device) as net_connect:
                 net_connect.enable()
@@ -186,5 +189,10 @@ class UpdateInt(BasicModule):
                 Display.success(f"-------------- Device {device['host']} --------------\n {output}\n -------------- "
                                 f"END --------------")
 
+            return 200
+
         except Exception as e:
-            raise e
+            if self.sensitivity == "yes":
+                return 401
+
+            return 402

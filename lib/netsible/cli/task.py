@@ -18,8 +18,8 @@ def start_task(file_path, inv_file):
             playbook = yaml.safe_load(file)
 
         Display.debug(f"{file_path} is valid YAML.")
-        tasks_to_run, hosts = parse_yaml(file_path, inv_file)
-        validate_and_run(tasks_to_run, hosts)
+        tasks_to_run, hosts, sensitivity = parse_yaml(file_path, inv_file)
+        validate_and_run(tasks_to_run, hosts, sensitivity)
 
     except yaml.YAMLError as exc:
         print(f"Error in YAML file {file_path}:")
@@ -38,7 +38,10 @@ def parse_yaml(file_path, inv_file):
     with open(file_path, 'r') as file:
         playbook_yaml = file.read()
         playbook = yaml.safe_load(playbook_yaml)
+        # TODO убрать костыли
         hosts = playbook[0]['hosts']
+        sensitivity = playbook[0]['sensitivity']
+
         client_i = None
 
         with open(inv_file, 'r') as inv:
@@ -49,22 +52,23 @@ def parse_yaml(file_path, inv_file):
                     client_i = client_info
 
         for play in playbook:
+
             for task in play['tasks']:
                 task_name = task['name']
                 for module, params in task.items():
 
                     if module != 'name':
-
                         tasks_to_run.append({
                             'task_name': task_name,
                             'module': module,
                             'params': params,
-                            'client_info': client_i
+                            'client_info': client_i,
                         })
-    return tasks_to_run, hosts
+
+    return tasks_to_run, hosts, sensitivity
 
 
-def validate_and_run(tasks_to_run, hosts):
+def validate_and_run(tasks_to_run, hosts, sensitivity):
     for task in tasks_to_run:
         if task['client_info'] is None:
             Display.error(f"Critical error. Can't get host '{hosts}'.")
@@ -91,9 +95,20 @@ def validate_and_run(tasks_to_run, hosts):
                 return
 
     for task in tasks_to_run:
-        Display.debug(f"Running task '{task['task_name']}' using module '{task['module']}' with params {task['params']}")
-        (MODULES.get(task['module']))().run(task_name=task['task_name'], client_info=task['client_info'],
-                                            module=task['module'], params=task['params'])
+        Display.debug(
+            f"Running task '{task['task_name']}' using module '{task['module']}' with params {task['params']}")
+
+        status_code = (MODULES.get(task['module']))().run(task_name=task['task_name'], client_info=task['client_info'],
+                                                          module=task['module'], params=task['params'],
+                                                          sensitivity=sensitivity)
+        if status_code == 200:
+            continue
+
+        if status_code == 401:
+            Display.error(f'Unable to connect - "{task["client_info"]["host"]}", aborting tasks (sensitivity = yes)')
+            return
+
+        Display.error(f'Unable to connect - "{task["client_info"]["host"]}", skipping task (sensitivity = no)')
 
 
 class TaskCLI:
