@@ -3,8 +3,10 @@
 ## Содержание
 
 - [Установка](#установка)
-- [Разовое использование](#использование)
-- [Использование задач](#использование_задач)
+- [netsible](#использование)
+- [netsible-task](#использование_задач)
+- [Доступные модули](#модули)
+- [Доступные ОС](#ос)
 - [Примеры](#примеры)
 
 ## Установка CLI<a name="установка"></a>
@@ -58,6 +60,28 @@ netsible-task -t <task_file.yaml> -p <path_to_custom_dir>
 Где:
  - ``task_file.yaml`` - файл с описанием задач и хостов.
  - ``path_to_custom_dir`` - путь до пользовательской директории с конфигурационными файлами netsible.
+
+## Доступные модули <a name="модули"></a>
+1) **updateint** - модуль позволяет конфигурировать интерфейс, список доступный параметров:<br>
+   - interface_name
+   - description
+   - ip_address
+   - subnet_mask
+   - mtu
+   - speed
+   - duplex
+   - bandwidth
+   - encapsulation
+   - authentication
+   - switchport_mode
+   - trunk_allowed_vlans
+   - shutdown
+   - write
+
+## Доступные ОС <a name="ос"></a>
+1) **сisco_ios**
+2) **mikrotik_routeros**
+3) **linux**
 
 ## Примеры <a name="примеры"></a>
 ### netsible 

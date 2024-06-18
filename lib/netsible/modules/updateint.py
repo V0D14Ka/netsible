@@ -149,7 +149,7 @@ class UpdateInt(BasicModule):
     def static_params():
         dict_params = ["interface_name", "description", "ip_address", "subnet_mask", "mtu", "speed", "duplex",
                        "bandwidth", "encapsulation", "authentication", "switchport_mode", "trunk_allowed_vlans",
-                       "shutdown"]
+                       "shutdown", "write"]
         module_template = {
             'cisco_ios': template_cisco,
             'mikrotik_routeros': template_router_os
