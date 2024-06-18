@@ -44,6 +44,7 @@ def parse_yaml(file_path, inv_file):
         with open(inv_file, 'r') as inv:
             for line in inv:
                 client_info = dict(part.split('=') for part in line.strip().split(' '))
+
                 if client_info.get('name') == hosts:
                     client_i = client_info
 
@@ -76,8 +77,14 @@ def validate_and_run(tasks_to_run, hosts):
             Display.error(f"Module '{task['module']}' is not in the list of available modules.")
             return
 
-        params = MODULES.get(task['module']).static_params()
+        params, module_temp = MODULES.get(task['module']).static_params()
         print(params)
+        if task['client_info']['type'] not in module_temp:
+            Display.error(f"Unsupported os type - '{task['client_info']['type']}' "
+                          f"for module - '{task['module']}', "
+                          f"host - '{task['client_info']['host']}'.")
+            return
+
         for param in task['params'].items():
             if param[0] not in params:
                 Display.error(f"Incorrect param - '{param[0]}' in module - '{task['module']}'.")

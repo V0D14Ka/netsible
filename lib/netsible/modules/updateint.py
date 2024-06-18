@@ -66,7 +66,7 @@ interface {{ interface_name }}
 
 {% if write %}
  do write
-{% else %}
+{% endif %}
 
 {% if description is not defined and ip_address is not defined and mtu is not defined and speed is not defined and duplex is not defined and bandwidth is not defined and encapsulation is not defined and authentication is not defined and switchport_mode is not defined and shutdown is not defined %}
  no shutdown
@@ -143,12 +143,6 @@ template_router_os = '''
 {% endif %}
 '''
 
-module_template = {
-    'cisco': template_cisco,
-    'routeros': template_router_os
-}
-
-
 class UpdateInt(BasicModule):
 
     def run(self, **kwargs):
@@ -161,7 +155,11 @@ class UpdateInt(BasicModule):
         dict_params = ["interface_name", "description", "ip_address", "subnet_mask", "mtu", "speed", "duplex",
                        "bandwidth", "encapsulation", "authentication", "switchport_mode", "trunk_allowed_vlans",
                        "shutdown"]
-        return dict_params
+        module_template = {
+            'cisco_ios': template_cisco,
+            'routeros': template_router_os
+        }
+        return dict_params, module_template
 
     def print_cfg(self):
         template = Template(template_cisco)
@@ -182,7 +180,7 @@ class UpdateInt(BasicModule):
                 'verbose': True,  # включить вывод подробной информации о подключении
             }
 
-            template = Template(module_template.get(self.module))
+            template = Template(module_template.get(device_type))
             output = template.render(self.params)
             commands = [line for line in output.splitlines() if line.strip()]
 
