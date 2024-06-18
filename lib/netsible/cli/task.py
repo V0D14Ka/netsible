@@ -143,10 +143,9 @@ class TaskCLI:
 
         try:
             inv_file = r"\hosts.txt" if platform.system() == 'Windows' else r"/hosts"
-            task_file = conf_dir_path + fr"\{self.args.task}" \
-                if platform.system() == 'Windows' else fr"/{self.args.task}"
+            task_file = fr"\{self.args.task}" if platform.system() == 'Windows' else fr"/{self.args.task}"
 
-            start_task(task_file, conf_dir_path + inv_file)
+            start_task(conf_dir_path + task_file, conf_dir_path + inv_file)
 
         except FileNotFoundError as e:
             Display.error(f'The path {conf_dir_path} is missing or empty, make sure you have created needed files.')

@@ -72,7 +72,8 @@ class UpdateInt(BasicModule):
 
     def run(self, **kwargs):
         super().run(**kwargs)
-        self.print_cfg()
+        self.ssh_connect_and_execute(self.client_info['type'], self.client_info['host'],
+                                     self.client_info['user'], self.client_info['pass'])
 
     @staticmethod
     def static_params():
@@ -87,7 +88,7 @@ class UpdateInt(BasicModule):
         commands = [line for line in output.splitlines() if line.strip()]
         print(commands)
 
-    def ssh_connect_and_execute(self, device_type, hostname, user, password, command, keyfile=None, port=22):
+    def ssh_connect_and_execute(self, device_type, hostname, user, password, command=None, keyfile=None, port=22):
 
         try:
             device = {
