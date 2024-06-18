@@ -73,35 +73,41 @@ interface {{ interface_name }}
 {% endif %}'''
 
 template_router_os = '''
-/interface {{ interface_name }}
-{% if description is defined %}
- description="{{ description }}"
-{% endif %}
-
-{% if ip_address is defined and subnet_mask is defined %}
- ip address={{ ip_address }}/{{ subnet_mask }}
-{% endif %}
-
-{% if secondary_ip_addresses is defined %}
-{% for ip in secondary_ip_addresses %}
- ip address={{ ip.address }}/{{ ip.subnet }} add
-{% endfor %}
-{% endif %}
-
+/interface ethernet
 {% if mtu is defined %}
- mtu={{ mtu }}
+ set [ find default-name={{ interface_name }} ] mtu={{ mtu }}
+{% endif %}
+
+{% if description is defined %}
+ set [ find default-name={{ interface_name }} ] comment="{{ description }}"
 {% endif %}
 
 {% if speed is defined %}
- speed={{ speed }}
+ {% if auto-negotiation == no %}
+ set [ find default-name={{ interface_name }} ] auto-negotiation=no speed={{ speed }}
+ {% elif auto-negotiation == yes%}
+ set [ find default-name={{ interface_name }} ] auto-negotiation=yes advertise={{ speed }}
+ {% else %}
+ ; You must provide auto-negotiation param to change speed
+ {% endif %}
 {% endif %}
 
 {% if duplex is defined %}
- duplex={{ duplex }}
+ {% if duplex == 'full' %}
+ set [ find default-name={{ interface_name }} ] full-duplex=yes
+ {% elif duplex == 'auto' %}
+ set [ find default-name={{ interface_name }} ] full-duplex=no
+ {% endif %}
 {% endif %}
 
-{% if bandwidth is defined %}
- tx-rate={{ bandwidth }}
+{% if shutdown %}
+ set [ find default-name={{ interface_name }} ] disabled=yes
+{% else %}
+ set [ find default-name={{ interface_name }} ] disabled=no
+{% endif %}
+
+{% if ip_address is defined and subnet_mask is defined %}
+ /ip add address={{ ip_address }}/{{ subnet_mask }} interface={{ interface_name }}
 {% endif %}
 
 {% if encapsulation is defined %}
@@ -128,20 +134,8 @@ template_router_os = '''
  {% endif %}
 {% endif %}
 
-{% if shutdown %}
- disabled=yes
-{% else %}
- disabled=no
-{% endif %}
-
-{% if write %}
- /export
-{% else %}
-{% if description is not defined and ip_address is not defined and mtu is not defined and speed is not defined and duplex is not defined and bandwidth is not defined and encapsulation is not defined and authentication is not defined and switchport_mode is not defined and shutdown is not defined %}
- enabled=yes
-{% endif %}
-{% endif %}
 '''
+
 
 class UpdateInt(BasicModule):
 
@@ -184,6 +178,7 @@ class UpdateInt(BasicModule):
             template = Template(mt.get(device_type))
             output = template.render(self.params)
             commands = [line for line in output.splitlines() if line.strip()]
+            print(commands)
 
             with ConnectHandler(**device) as net_connect:
                 net_connect.enable()
