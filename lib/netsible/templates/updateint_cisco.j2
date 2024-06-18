@@ -1,0 +1,61 @@
+interface {{ interface_name }}
+{% if description is defined %}
+ description {{ description }}
+{% endif %}
+
+{% if ip_address is defined and subnet_mask is defined %}
+ ip address {{ ip_address }} {{ subnet_mask }}
+{% endif %}
+
+{% if secondary_ip_addresses is defined %}
+{% for ip in secondary_ip_addresses %}
+ ip address {{ ip.address }} {{ ip.subnet }} secondary
+{% endfor %}
+{% endif %}
+
+{% if mtu is defined %}
+ mtu {{ mtu }}
+{% endif %}
+
+{% if speed is defined %}
+ speed {{ speed }}
+{% endif %}
+
+{% if duplex is defined %}
+ duplex {{ duplex }}
+{% endif %}
+
+{% if bandwidth is defined %}
+ bandwidth {{ bandwidth }}
+{% endif %}
+
+{% if encapsulation is defined %}
+ encapsulation {{ encapsulation }}
+{% endif %}
+
+{% if authentication is defined %}
+ authentication {{ authentication }}
+{% endif %}
+
+{% if switchport_mode is defined %}
+ switchport mode {{ switchport_mode }}
+{% if switchport_mode == 'access' and access_vlan is defined %}
+ switchport access vlan {{ access_vlan }}
+{% endif %}
+{% if switchport_mode == 'trunk' and trunk_allowed_vlans is defined %}
+ switchport trunk allowed vlan {{ trunk_allowed_vlans }}
+{% endif %}
+{% if switchport_mode == 'trunk' and native_vlan is defined %}
+ switchport trunk native vlan {{ native_vlan }}
+{% endif %}
+{% endif %}
+
+{% if shutdown %}
+ shutdown
+{% else %}
+ no shutdown
+{% endif %}
+
+{% if description is not defined and ip_address is not defined and mtu is not defined and speed is not defined and duplex is not defined and bandwidth is not defined and encapsulation is not defined and authentication is not defined and switchport_mode is not defined and shutdown is not defined %}
+ no shutdown
+{% endif %}

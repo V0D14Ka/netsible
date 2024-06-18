@@ -77,6 +77,7 @@ def validate_and_run(tasks_to_run, hosts):
             return
 
         params = MODULES.get(task['module']).static_params()
+        print(params)
         for param in task['params'].items():
             if param[0] not in params:
                 Display.error(f"Incorrect param - '{param[0]}' in module - '{task['module']}'.")
