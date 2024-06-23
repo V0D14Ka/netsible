@@ -14,8 +14,23 @@
         process: 1
         networks:
           - ip: "199.99.99.0"
-            wildcard: "0.0.0.255"
+            subnet_mask: 24
             area: 0
         auth:
           int: "e0/1"
           pass: "passwd"
+
+    - name: "Bgp conf"
+      bgp:
+        as: 100
+
+        networks:
+          - ip: "111.111.111.0"
+            subnet_mask: 24
+
+        neighbors:
+          - ip: "123.123.123.43"
+            name: "mommy"
+            as: 100
+            next_hop_self: True
+            route_reflector: True

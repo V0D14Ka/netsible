@@ -1,5 +1,6 @@
 from netsible.modules.updateint import UpdateInt
 from netsible.modules.ospf import Ospf
+from netsible.modules.bgp import Bgp
 
 version = "Netsible 0.1 beta"
 
@@ -24,8 +25,14 @@ MODULES = {
                                   "shutdown", "write"],
                   "module_templates": ["cisco_ios", "mikrotik_routeros"]
                   },
+
     'ospf': {"class": Ospf,
-             "dict_params": ["process", "zone", "networks", "area", "router_id", "auth"],
+             "dict_params": ["process", "networks", "area", "router_id", "auth"],
              "module_templates": ["cisco_ios", "mikrotik_routeros"],
              },
+
+    'bgp': {"class": Bgp,
+            "dict_params": ["as", "networks", "neighbors"],
+            "module_templates": ["cisco_ios", "mikrotik_routeros"],
+            },
 }
