@@ -11,7 +11,13 @@ METHODS = {
                   'lldp': 'sh lldp neighbors',
                   'config': 'sh running-config'
                   },
-    'linux': {'ip': 'ifconfig',
+    'mikrotik_routeros': {'int': '/interface ethernet pr',
+                          'ip': '/ip address pr',
+                          'vlan': '/interface vlan pr',
+                          'route': '/ip route pr',
+                          'config': 'export'
+                          },
+    'linux': {'int': 'ifconfig',
               'uptime': 'uptime',
               },
 }

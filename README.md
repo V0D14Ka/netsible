@@ -4,6 +4,7 @@
 
 - [Установка](#установка)
 - [netsible cli](#использование)
+- [Доступные методы](#методы)
 - [netsible-task cli](#использование_задач)
 - [Доступные модули](#модули)
 - [Доступные ОС](#ос)
@@ -41,6 +42,16 @@ netsible <target> -m <method> -i <path_to_custom_dir>
  - ``method`` - метод/команда для выполнения на хосте.
  - ``path_to_custom_dir`` - путь до пользовательской директории с конфигурационными файлами netsible.
 
+## Доступные методы <a name="методы"></a>
+1) **cisco_ios & router_os**
+     - **int** - список интерфейсов;
+     - **vlan** - список vlan;
+     - **route** - список маршрутов;
+     - **lldp** - список lldp соседей;
+     - **config** - запущенный конфиг.
+2) **linux**
+     - **int** - список интерфейсов;
+     - **uptime** - время работы и средняя загрузка.
 ## netsible-task cli <a name="использование_задач"></a>
 
 Создайте файл в директории **~/.netsible** в формате **.yaml** с задачами, как показано в
@@ -63,20 +74,40 @@ netsible-task -t <task_file.yaml> -p <path_to_custom_dir>
 
 ## Доступные модули <a name="модули"></a>
 1) **updateint** - модуль позволяет конфигурировать интерфейс, список доступный параметров:<br>
-   - interface_name
-   - description
-   - ip_address
-   - subnet_mask
-   - mtu
-   - speed
-   - duplex
-   - bandwidth
-   - encapsulation
-   - authentication
-   - switchport_mode
-   - trunk_allowed_vlans
-   - shutdown
-   - write
+    - **interface_name** - название интерфейса;
+    - **description** - описание;
+    - **ip_address** - адрес, который будет назначен;
+    - **subnet_mask** - маска сети;
+    - **mtu** - mtu;
+    - **speed** - скорость;
+    - **duplex** - duplex;
+    - **bandwidth** - 
+    - **encapsulation** - метод инкапсуляции в L2;
+    - **authentication** - 
+    - **switchport_mode** - режим интерфейса;
+    - **trunk_allowed_vlans** - vlans, допущенные к trunk;
+    - **shutdown** - включение/ выключение интерфейса;
+    - **write** - сохранение изменений;
+2) **ospf** - модуль позволяет настраивать ospf, список доступный параметров:<br>
+    - **process** - номер запущенного процесса ospf;
+    - **networks** - список сетей для анонсирования;
+      - **ip** - адрес сети;
+      - **subnet_mask** - маска сети;
+      - **area** - зона ospf;
+    - **auth** - авторизация соседей;
+      - **int** - интерфейс, на котором будет пароль;
+      - **pass** - пароль.
+3) **bgp** - модуль позволяет настраивать bgp, список доступный параметров:<br>
+    - **as**
+    - **networks** - список сетей для анонсирования;
+      - **ip** - адрес сети;
+      - **subnet_mask** - маска сети;
+    - **neighbors** - список bgp соседей;
+      - **ip** - адрес соседа;
+      - **name** - имя соседа;
+      - **as** - автономная система соседа;
+      - **hext_hop_self** - анонсирование gateway;
+      - **route_reflector** 
 
 ## Доступные ОС <a name="ос"></a>
 1) **сisco_ios**
