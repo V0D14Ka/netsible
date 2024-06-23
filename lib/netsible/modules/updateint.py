@@ -150,6 +150,18 @@ class UpdateInt(BasicModule):
 
     def run(self, **kwargs):
         super().run(**kwargs)
+
+        if self.client_info['type'] == 'cisco_ios':
+            try:
+                cidr = int(self.params['subnet_mask'])
+                subnet_mask = (0xFFFFFFFF >> (32 - cidr)) << (32 - cidr)
+                subnet_mask_str = '.'.join([str((subnet_mask >> (8 * i)) & 0xFF) for i in range(4)[::-1]])
+
+                self.params['subnet_mask'] = subnet_mask_str
+            except ValueError:
+                pass
+
+
         return self.ssh_connect_and_execute(self.client_info['type'], self.client_info['host'],
                                             self.client_info['user'], self.client_info['pass'],
                                             self.sensitivity)
@@ -182,7 +194,7 @@ class UpdateInt(BasicModule):
             template = Template(mt.get(device_type))
             output = template.render(self.params)
             commands = [line for line in output.splitlines() if line.strip()]
-            # print(commands)
+            print(commands)
             print(sensitivity)
 
             with ConnectHandler(**device) as net_connect:

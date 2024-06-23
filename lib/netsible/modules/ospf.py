@@ -12,7 +12,7 @@ router-id {{ router_id }}
 {% endif %}
 
 {% for network in networks %}
- network {{ network.ip }} {{ network.wildcard }} area {{ network.area }}
+ network {{ network.ip }} {{ network.subnet_mask }} area {{ network.area }}
 {% endfor %}
 
 {% if auth is defined %}
@@ -30,7 +30,7 @@ set [ find default=yes ] router-id={{ router_id }}
 
 /routing ospf network
 {% for network in networks %}
-add network={{ network.ip }}/{{ network.cidr }} area={{ network.area }}
+add network={{ network.ip }}/{{ network.subnet_mask }} area={{ network.area }}
 {% endfor %}
 
 {% if auth is defined %}
@@ -52,6 +52,30 @@ class Ospf(BasicModule):
 
     def run(self, **kwargs):
         super().run(**kwargs)
+
+        if self.client_info['type'] == 'cisco_ios':
+            for network in self.params.get('networks', []):
+                try:
+                    cidr = int(network['subnet_mask'])
+                    subnet_mask = (0xFFFFFFFF >> (32 - cidr)) << (32 - cidr)
+                    wildcard_mask = ~subnet_mask & 0xFFFFFFFF
+                    wildcard_mask_str = '.'.join([str((wildcard_mask >> (8 * i)) & 0xFF) for i in range(4)[::-1]])
+
+                    network['subnet_mask'] = wildcard_mask_str
+                except ValueError:
+                    continue
+
+        elif self.client_info['type'] == 'mikrotik_routeros':
+            for network in self.params.get('networks', []):
+                try:
+                    area = int(network['area'])
+
+                    if area == 0:
+                        network['area'] = 'backbone'
+
+                except ValueError:
+                    continue
+
         return self.ssh_connect_and_execute(self.client_info['type'], self.client_info['host'],
                                             self.client_info['user'], self.client_info['pass'],
                                             self.sensitivity)

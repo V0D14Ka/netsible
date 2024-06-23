@@ -26,6 +26,6 @@ MODULES = {
                   },
     'ospf': {"class": Ospf,
              "dict_params": ["process", "zone", "networks", "area", "router_id", "auth"],
-             "module_templates": ["cisco_ios"],
+             "module_templates": ["cisco_ios", "mikrotik_routeros"],
              },
 }
