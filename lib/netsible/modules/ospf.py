@@ -60,6 +60,7 @@ class Ospf(BasicModule):
             template = Template(mt.get(device_type))
             output = template.render(self.params)
             commands = [line for line in output.splitlines() if line.strip()]
+            print(commands)
             print(sensitivity)
 
             with ConnectHandler(**device) as net_connect:
