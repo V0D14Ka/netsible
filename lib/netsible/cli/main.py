@@ -6,9 +6,8 @@ import platform
 import errno
 from netmiko import ConnectHandler, NetmikoTimeoutException
 from netsible.cli.config import version as ver
-from netsible.cli.config import methods_cisco_dir
+from netsible.cli.config import METHODS
 from netsible.utils.utils import Display
-
 
 
 def ssh_connect_and_execute(device_type, hostname, user, password, command, keyfile=None, port=22):
@@ -106,8 +105,7 @@ class CLI:
         self.parser.add_argument('host', type=str, help='target host name from hosts.txt')
 
         self.parser.add_argument('-v', '--version', action='version', version=ver)
-        self.parser.add_argument('-m', '--method', choices=['ping', 'uptime', 'int', 'vlan', 'config',
-                                                            'lldp', 'route'], help='choose the method', default='ping')
+        self.parser.add_argument('-m', '--method', help='choose the method', default='ping')
         self.parser.add_argument('-f', '--force', action='store_true', help='force operation')
         self.parser.add_argument('-t', '--task', type=str, help='task from to execute on the target host')
         self.parser.add_argument('-p', '--path', type=str, help='custom config dir path')
@@ -128,8 +126,18 @@ class CLI:
             if self.args.method == 'ping':
                 ping_ip(client_info)
             else:
-                cmd = methods_cisco_dir[self.args.method]
-                task(client_info, cmd)
+                cmd = METHODS.get(client_info['type'])
+                if cmd is None:
+                    Display.error(f"Unsupported OS '{client_info['type']}'.")
+                    return
+
+                try:
+                    cmd = cmd.get(self.args.method)
+                    task(client_info, cmd)
+                except:
+                    Display.error(f"Method '{self.args.method}' is not in the list of available methods for "
+                                  f"'{client_info['type']}'.")
+                    return
 
 
         except FileNotFoundError as e:

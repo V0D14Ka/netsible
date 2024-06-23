@@ -2,18 +2,16 @@ from netsible.modules.updateint import UpdateInt
 
 version = "Netsible 0.1 beta"
 
-methods_cisco_dir = {
-    'int': 'sh ip int br',
-    'vlan': 'sh vlan br',
-    'route': 'sh ip route',
-    'lldp': 'sh lldp neighbors',
-    'uptime': 'uptime',
-    'config': 'sh running-config'
-}
-
-methods_linux_dir = {
-    'ip': 'ifconfig',
-    'uptime': 'uptime',
+METHODS = {
+    'cisco_ios': {'int': 'sh ip int br',
+                  'vlan': 'sh vlan br',
+                  'route': 'sh ip route',
+                  'lldp': 'sh lldp neighbors',
+                  'config': 'sh running-config'
+                  },
+    'linux': {'ip': 'ifconfig',
+              'uptime': 'uptime',
+              },
 }
 
 MODULES = {
