@@ -1,4 +1,5 @@
 from netsible.modules.updateint import UpdateInt
+from netsible.modules.ospf import Ospf
 
 version = "Netsible 0.1 beta"
 
@@ -21,6 +22,10 @@ MODULES = {
                                   "bandwidth", "encapsulation", "authentication", "switchport_mode",
                                   "trunk_allowed_vlans",
                                   "shutdown", "write"],
-                  "module_template": ["cisco_ios", "mikrotik_routeros"]
-                  }
+                  "module_templates": ["cisco_ios", "mikrotik_routeros"]
+                  },
+    'ospf': {"class": Ospf,
+             "dict_params": ["process", "zone", "networks", "area", "router_id", "auth"],
+             "module_templates": ["cisco_ios"],
+             },
 }

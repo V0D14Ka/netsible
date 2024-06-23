@@ -12,6 +12,6 @@ if sys.version_info < (3, 10):
 jinja2_version = version('jinja2')
 if jinja2_version < "3.0.0":
     raise SystemExit(
-        'ERROR: Ansible requires Jinja2 3.0 or newer on the controller. '
+        'ERROR: Netsible requires Jinja2 3.0 or newer on the controller. '
         'Current version: %s' % jinja2_version
     )

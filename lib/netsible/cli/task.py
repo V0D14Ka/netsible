@@ -82,7 +82,7 @@ def validate_and_run(tasks_to_run, hosts, sensitivity):
             return
 
         params = MODULES.get(task['module']).get('dict_params')
-        module_temp = MODULES.get(task['module']).get('module_template')
+        module_temp = MODULES.get(task['module']).get('module_templates')
         print(params)
         if task['client_info']['type'] not in module_temp:
             Display.error(f"Unsupported os type - '{task['client_info']['type']}' "

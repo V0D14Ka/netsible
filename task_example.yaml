@@ -8,3 +8,14 @@
         description: "*** some desc ***"                  # Описание
         ip_address: "101.1.250.12"                        # IP-address
         subnet_mask: "255.255.255.0"                      # Маска
+
+    - name: "Conf ospf"
+      ospf:
+        process: 1
+        networks:
+          - ip: "199.99.99.0"
+            wildcard: "0.0.0.255"
+            area: 0
+        auth:
+          int: "e0/1"
+          pass: "passwd"
