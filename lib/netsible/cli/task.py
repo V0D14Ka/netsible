@@ -7,7 +7,7 @@ import errno
 import yaml
 from netsible.cli.config import version as ver
 from netsible.utils.utils import Display
-from netsible.cli import MODULES
+from netsible.cli.config import MODULES
 
 from netsible.utils.utils import ping_ip
 
@@ -81,7 +81,8 @@ def validate_and_run(tasks_to_run, hosts, sensitivity):
             Display.error(f"Module '{task['module']}' is not in the list of available modules.")
             return
 
-        params, module_temp = MODULES.get(task['module']).static_params()
+        params = MODULES.get(task['module']).get('dict_params')
+        module_temp = MODULES.get(task['module']).get('module_template')
         print(params)
         if task['client_info']['type'] not in module_temp:
             Display.error(f"Unsupported os type - '{task['client_info']['type']}' "
@@ -98,9 +99,10 @@ def validate_and_run(tasks_to_run, hosts, sensitivity):
         Display.debug(
             f"Running task '{task['task_name']}' using module '{task['module']}' with params {task['params']}")
 
-        status_code = (MODULES.get(task['module']))().run(task_name=task['task_name'], client_info=task['client_info'],
-                                                          module=task['module'], params=task['params'],
-                                                          sensitivity=sensitivity)
+        status_code = (MODULES.get(task['module']).get('class'))().run(task_name=task['task_name'],
+                                                                       client_info=task['client_info'],
+                                                                       module=task['module'], params=task['params'],
+                                                                       sensitivity=sensitivity)
         if status_code == 200:
             continue
 

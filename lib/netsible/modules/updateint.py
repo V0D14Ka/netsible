@@ -136,6 +136,15 @@ template_router_os = '''
 
 '''
 
+dict_params = ["interface_name", "description", "ip_address", "subnet_mask", "mtu", "speed", "duplex",
+               "bandwidth", "encapsulation", "authentication", "switchport_mode", "trunk_allowed_vlans",
+               "shutdown", "write"]
+
+module_template = {
+    'cisco_ios': template_cisco,
+    'mikrotik_routeros': template_router_os
+}
+
 
 class UpdateInt(BasicModule):
 
@@ -147,13 +156,6 @@ class UpdateInt(BasicModule):
 
     @staticmethod
     def static_params():
-        dict_params = ["interface_name", "description", "ip_address", "subnet_mask", "mtu", "speed", "duplex",
-                       "bandwidth", "encapsulation", "authentication", "switchport_mode", "trunk_allowed_vlans",
-                       "shutdown", "write"]
-        module_template = {
-            'cisco_ios': template_cisco,
-            'mikrotik_routeros': template_router_os
-        }
         return dict_params, module_template
 
     def print_cfg(self):
