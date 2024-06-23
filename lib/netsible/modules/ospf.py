@@ -20,13 +20,31 @@ int {{ auth.int }}
 ip ospf authentication-key 0 {{ auth.pass }}
 ip ospf authentication
 {% endif %}
-
 '''
+
+template_router_os = """
+{% if router_id is defined %}
+/routing ospf instance
+set [ find default=yes ] router-id={{ router_id }}
+{% endif %}
+
+/routing ospf network
+{% for network in networks %}
+add network={{ network.ip }}/{{ network.cidr }} area={{ network.area }}
+{% endfor %}
+
+{% if auth is defined %}
+/routing ospf interface
+add interface={{ auth.int }} network-type=broadcast
+set [ find default-name={{ auth.int }} ] authentication=simple authentication-key={{ auth.pass }}
+{% endif %}
+"""
 
 dict_params = ["process", "zone", "networks", "area", "router_id", "auth"]
 
 module_template = {
     'cisco_ios': template_cisco,
+    'mikrotik_routeros': template_router_os
 }
 
 
