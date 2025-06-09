@@ -89,7 +89,10 @@ def init_dir():
         Display.debug("Created the '%s' directory" % inventory_dir)
 
     # files
-    files_to_create = [inventory_dir / "hosts.yaml", inventory_dir / "groups.yaml", inventory_dir / "defaults.yaml", netsible_dir / "config.yaml"]
+    files_to_create = [(inventory_dir / "hosts.yaml"), 
+                       (inventory_dir / "groups.yaml"), 
+                       (inventory_dir / "defaults.yaml"), 
+                       (netsible_dir / "config.yaml")]
 
     for path in files_to_create:
         if not path.exists():
@@ -98,13 +101,13 @@ def init_dir():
 inventory:
   plugin: SimpleInventory
   options:
-    host_file: "{inventory_dir / "hosts.yaml"}"
-    group_file: "{inventory_dir / "groups.yaml"}"
-    defaults_file: "{inventory_dir / "defaults.yaml"}"
+    host_file: "{files_to_create[0].resolve().as_posix()}"
+    group_file: "{files_to_create[1].resolve().as_posix()}"
+    defaults_file: "{files_to_create[2].resolve().as_posix()}"
 """.strip() + '\n')
             else:
                 path.touch()
             path.chmod(0o600)
-            Display.debug(f"Created inventory file: {path}")
+            Display.debug(f"Created file: {path}")
         else:
-            Display.debug(f"Inventory file already exists: {path}")
+            Display.debug(f"File already exists: {path}")
