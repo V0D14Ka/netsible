@@ -1,13 +1,15 @@
 import argparse
+from pathlib import Path
 import sys
 import platform
 import errno
 
 import yaml
+from netsible.cli import BaseCLI
 from netsible.cli.config import version as ver
 from netsible.cli.config import MODULES
 
-from netsible.utils.utils import ping_ip, get_default_dir, parse_yaml, Display
+from netsible.utils.utils import init_dir, ping_ip, get_default_dir, Display
 
 
 def start_task(file_path, inv_file):
@@ -109,7 +111,7 @@ def validate_and_run(tasks_to_run, hosts, sensitivity):
         Display.error(f'Unable to connect - "{task["client_info"]["host"]}", skipping task (sensitivity = no)')
 
 
-class TaskCLI:
+class TaskCLI(BaseCLI):
     def __init__(self, args):
 
         if not args:
@@ -117,34 +119,6 @@ class TaskCLI:
 
         self.args = args
         self.parser = None
-
-    @classmethod
-    def cli_start(cls, args=None):
-
-        try:
-            Display.debug("starting run")
-            netsible_dir = get_default_dir()
-            try:
-                netsible_dir.mkdir(mode=0o700)
-            except OSError as exc:
-                if exc.errno != errno.EEXIST:
-                    Display.warning("Failed to create the directory '%s':" % netsible_dir)
-            else:
-                Display.debug("Created the '%s' directory" % netsible_dir)
-
-            try:
-                if args is None:
-                    args = sys.argv
-                    # TODO validation
-            except UnicodeError:
-                Display.error('Command line args are not in utf-8, unable to continue.  '
-                              'Netsible currently only understands utf-8')
-            else:
-                cli = cls(args)
-                cli.run()
-
-        except KeyboardInterrupt:
-            Display.error("User interrupted execution")
 
     def parse(self):
         self.parser = argparse.ArgumentParser(description='Netsible-task Command Line Tool')

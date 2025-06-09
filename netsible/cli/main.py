@@ -5,9 +5,10 @@ import ping3
 import platform
 import errno
 from netmiko import ConnectHandler, NetmikoTimeoutException
+from netsible.cli import BaseCLI
 from netsible.cli.config import version as ver
 from netsible.cli.config import METHODS
-from netsible.utils.utils import Display, get_default_dir, ping_ip
+from netsible.utils.utils import Display, get_default_dir, init_dir, ping_ip
 
 
 def ssh_connect_and_execute(device_type, hostname, user, password, command, keyfile=None, port=22):
@@ -50,7 +51,7 @@ def task(client_info, command='uptime'):
         Display.warning("Can't connect to the target.")
 
 
-class CLI:
+class CLI(BaseCLI):
     def __init__(self, args):
 
         if not args:
@@ -58,36 +59,6 @@ class CLI:
 
         self.args = args
         self.parser = None
-
-    @classmethod
-    def cli_start(cls, args=None):
-
-        try:
-            Display.debug("starting run")
-            netsible_dir = get_default_dir()
-            try:
-                netsible_dir.mkdir(mode=0o700)
-            except OSError as exc:
-                if exc.errno != errno.EEXIST:
-                    Display.warning("Failed to create the directory '%s':" % netsible_dir)
-            else:
-                Display.debug("Created the '%s' directory" % netsible_dir)
-
-            try:
-                if args is None:
-                    args = sys.argv
-                    # TODO validation
-            except UnicodeError:
-                Display.error('Command line args are not in utf-8, unable to continue.  '
-                              'Netsible currently only understands utf-8')
-            else:
-                cli = cls(args)
-                cli.run()
-
-        except KeyboardInterrupt:
-            Display.error("User interrupted execution")
-
-        # sys.exit(exit_code)
 
     def parse(self):
         self.parser = argparse.ArgumentParser(description='Netsible Command Line Tool')

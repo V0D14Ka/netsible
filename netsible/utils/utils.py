@@ -1,3 +1,4 @@
+import errno
 import os
 import time
 from pathlib import Path
@@ -55,3 +56,55 @@ def get_default_dir():
         return Path(f'/home/{sudo_user}') / '.netsible'
     else:
         return Path.home() / '.netsible'
+
+
+def init_dir():
+    Display.debug("starting run")
+    netsible_dir = get_default_dir()
+    initialized_flag = netsible_dir / ".netsible_initialized"
+
+    if initialized_flag.exists():
+        return
+            
+    initialized_flag.touch()
+            
+    # main dir 
+    try:
+        netsible_dir.mkdir(mode=0o700)
+    except OSError as exc:
+        if exc.errno != errno.EEXIST:
+            Display.warning("Failed to create the directory '%s':" % netsible_dir)
+    else:
+        Display.debug("Created the '%s' directory" % netsible_dir)
+            
+
+    # inventory
+    try:
+        inventory_dir = netsible_dir / "inventory"
+        inventory_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        if exc.errno != errno.EEXIST:
+            Display.warning("Failed to create the directory '%s':" % inventory_dir)
+    else:
+        Display.debug("Created the '%s' directory" % inventory_dir)
+
+    # files
+    files_to_create = [inventory_dir / "hosts.yaml", inventory_dir / "groups.yaml", inventory_dir / "defaults.yaml", netsible_dir / "config.yaml"]
+
+    for path in files_to_create:
+        if not path.exists():
+            if path == files_to_create[-1]:
+                path.write_text(f"""
+inventory:
+  plugin: SimpleInventory
+  options:
+    host_file: "{inventory_dir / "hosts.yaml"}"
+    group_file: "{inventory_dir / "groups.yaml"}"
+    defaults_file: "{inventory_dir / "defaults.yaml"}"
+""".strip() + '\n')
+            else:
+                path.touch()
+            path.chmod(0o600)
+            Display.debug(f"Created inventory file: {path}")
+        else:
+            Display.debug(f"Inventory file already exists: {path}")
