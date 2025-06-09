@@ -10,8 +10,7 @@ here = pathlib.Path(__file__).parent.resolve()
 setup(
     name='netsible',
     version='0.1',
-    package_dir={'': 'lib'},
-    packages=find_packages('lib'),
+    packages=find_packages(),
     entry_points={
         'console_scripts': [
             'netsible=netsible.cli.main:main',
