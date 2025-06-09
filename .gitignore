@@ -1,9 +1,10 @@
 .idea
 .venv
 .env
+venv
 
 *.secret
 build
-lib/netsible.egg-info
+netsible.egg-info
 task_example.yaml
 test.py
