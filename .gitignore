@@ -8,3 +8,4 @@ build
 netsible.egg-info
 task_example.yaml
 test.py
+nornir.log
