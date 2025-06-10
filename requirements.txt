@@ -7,3 +7,6 @@ pexpect
 colorama
 jinja2
 ping3
+nornir
+nornir-napalm
+nornir-utils
