@@ -1,13 +1,10 @@
 import argparse
-import sys
 
-import ping3
-import platform
-import errno
 from netmiko import ConnectHandler, NetmikoTimeoutException
 from netsible.cli import BaseCLI
 from netsible.cli.config import version as ver
 from netsible.cli.config import METHODS
+from netsible.utils.nornir_loader import load_nornir
 from netsible.utils.utils import Display, get_default_dir, init_dir, ping_ip
 
 
@@ -28,15 +25,6 @@ def ssh_connect_and_execute(device_type, hostname, user, password, command, keyf
         return out
     except Exception as e:
         raise e
-
-
-def find_client_info(client_name, file_path):
-    with open(file_path, 'r') as file:
-        for line in file:
-            client_info = dict(part.split('=') for part in line.strip().split(' '))
-            if client_info.get('name') == client_name:
-                return client_info
-    return None
 
 
 def task(client_info, command='uptime'):
@@ -69,26 +57,39 @@ class CLI(BaseCLI):
         self.parser.add_argument('-f', '--force', action='store_true', help='force operation')
         self.parser.add_argument('-t', '--task', type=str, help='task from to execute on the target host')
         self.parser.add_argument('-p', '--path', type=str, help='custom config dir path')
+        self.parser.add_argument('--debug', action='store_true', help='enable debug mode')
 
         self.args = self.parser.parse_args(self.args[1:])
 
     def run(self):
 
         self.parse()
-
-        conf_dir_path = self.args.path if self.args.path is not None else str(get_default_dir())
-        print(conf_dir_path)
+        Display.debug("starting run") if self.args.debug else None
 
         try:
-            inv_file = "\hosts.txt" if platform.system() == 'Windows' else "/hosts"
-            client_info = find_client_info(self.args.host, conf_dir_path + inv_file)
+            nr = load_nornir(get_default_dir() / "config.yaml")
+            if self.args.host in nr.inventory.hosts:
+                client_info = {
+                            'name': nr.inventory.hosts[self.args.host].name,
+                            'hostname': nr.inventory.hosts[self.args.host].hostname,
+                            'username': nr.inventory.hosts[self.args.host].username,
+                            'password': nr.inventory.hosts[self.args.host].password,
+                            'platform': nr.inventory.hosts[self.args.host].platform,
+                            'host': nr.inventory.hosts[self.args.host].hostname,
+                            # ... другие параметры, если нужны
+                        }
+                Display.debug(f"Method: '{self.args.method}', host info: '{client_info}'") if self.args.debug else None
+            else:
+                Display.error(f"Host '{self.args.host} does not exist")
+                return
 
+            
             if self.args.method == 'ping':
                 ping_ip(client_info)
             else:
-                cmd = METHODS.get(client_info['type'])
+                cmd = METHODS.get(client_info['platform'])
                 if cmd is None:
-                    Display.error(f"Unsupported OS '{client_info['type']}'.")
+                    Display.error(f"Unsupported OS '{client_info['platform']}'.")
                     return
 
                 try:
@@ -96,12 +97,12 @@ class CLI(BaseCLI):
                     task(client_info, cmd)
                 except:
                     Display.error(f"Method '{self.args.method}' is not in the list of available methods for "
-                                  f"'{client_info['type']}'.")
+                                  f"'{client_info['platform']}'.")
                     return
 
 
         except FileNotFoundError as e:
-            Display.error(f'The path {conf_dir_path} is missing or empty, make sure you have created needed files.')
+            Display.error(f'The path {get_default_dir()} is missing or empty, make sure you have created needed files.')
             return
 
 

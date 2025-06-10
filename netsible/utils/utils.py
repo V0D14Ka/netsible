@@ -6,6 +6,7 @@ import yaml
 
 import ping3
 from colorama import Fore, Style
+from pathlib import Path
 
 
 class Display:
@@ -48,6 +49,14 @@ def ping_ip(client_info, only_ip=False):
 
     Display.success(f"Ping successful. Round-trip time: {result} ms")
 
+#DEPRECATED
+def find_client_info(client_name, file_path):
+    with open(file_path, 'r') as file:
+        for line in file:
+            client_info = dict(part.split('=') for part in line.strip().split(' '))
+            if client_info.get('name') == client_name:
+                return client_info
+    return None
 
 def get_default_dir():
     sudo_user = os.environ.get('SUDO_USER')
@@ -59,7 +68,6 @@ def get_default_dir():
 
 
 def init_dir():
-    Display.debug("starting run")
     netsible_dir = get_default_dir()
     initialized_flag = netsible_dir / ".netsible_initialized"
 
@@ -111,3 +119,4 @@ inventory:
             Display.debug(f"Created file: {path}")
         else:
             Display.debug(f"File already exists: {path}")
+
