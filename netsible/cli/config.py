@@ -1,6 +1,7 @@
 from netsible.modules.updateint import UpdateInt
 from netsible.modules.ospf import Ospf
 from netsible.modules.bgp import Bgp
+from netsible.modules.mnapalm import NapalmGetFacts
 
 version = "Netsible 0.1 beta"
 
@@ -41,4 +42,10 @@ MODULES = {
             "dict_params": ["as", "networks", "neighbors"],
             "module_templates": ["cisco_ios", "mikrotik_routeros"],
             },
+
+    # "napalm_get_facts": {
+    #     "class": NapalmGetFacts,
+    #     "dict_params": ["test"],  # если не требуется никаких параметров
+    #     "module_templates": ["mikrotik_routeros", "junos", "eos", "nxos"],  # дополни при необходимости
+    # },
 }
