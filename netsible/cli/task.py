@@ -1,8 +1,12 @@
 import argparse
+import difflib
 from pathlib import Path
 import sys
 import platform
 import errno
+
+from jinja2 import Environment, FileSystemLoader
+from netmiko import ConnectHandler, NetmikoTimeoutException
 from netsible.utils.nornir_loader import load_nornir
 
 import yaml
@@ -10,7 +14,7 @@ from netsible.cli import BaseCLI
 from netsible.cli.config import version as ver
 from netsible.cli.config import MODULES
 
-from netsible.utils.utils import init_dir, ping_ip, get_default_dir, Display
+from netsible.utils.utils import backup_config, init_dir, ping_ip, get_default_dir, Display, save_config, ssh_connect_and_execute
 
 
 def start_task(file_path, nr, debug = False):
@@ -76,19 +80,19 @@ def parse_yaml(file_path, nr, debug):
         hosts_name = playbook[0]['hosts']
         sensitivity = playbook[0].get('sensitivity', 'no')
 
-        # Получаем список host объектов, может быть один или несколько
         hosts_list = []
 
-        # 1) Проверка — хост ли это
+        # Это хост
         if hosts_name in nr.inventory.hosts:
             hosts_list.append(nr.inventory.hosts[hosts_name])
-        # 2) Проверка — группа ли это
+        
+        # Это группа
         elif hosts_name in nr.inventory.groups:
             group_obj = nr.inventory.groups[hosts_name]
             # Получаем хостов, входящих в группу (с учетом наследования)
             for host_name, host_obj in nr.inventory.hosts.items():
                 # Проверяем, состоит ли хост в группе
-                if hosts_name in host_obj.groups:
+                if host_name in host_obj.groups:
                     hosts_list.append(host_obj)
         else:
             raise ValueError(f"Host or group '{hosts_name}' not found in inventory")
@@ -101,6 +105,7 @@ def parse_yaml(file_path, nr, debug):
                 for module, params in task.items():
                     if module == 'name':
                         continue
+
                     # Для каждого хоста создаем задачу
                     for host_obj in hosts_list:
                         client_i = {
@@ -112,14 +117,16 @@ def parse_yaml(file_path, nr, debug):
                             'host': host_obj.hostname,
                             # ... другие параметры, если нужны
                         }
+
                         tasks_to_run.append({
                             'task_name': task_name,
                             'module': module,
                             'params': params,
                             'client_info': client_i,
                         })
-
+        backup_config(hosts_list)
     return tasks_to_run, hosts_name, sensitivity
+
 
 def validate_and_run(tasks_to_run, hosts, sensitivity, debug):
     # Validation part
@@ -177,7 +184,7 @@ def validate_and_run(tasks_to_run, hosts, sensitivity, debug):
 
         Display.error(f'Unable to connect - "{task["client_info"]["host"]}", skipping task (sensitivity = no)')
 
-
+        
 class TaskCLI(BaseCLI):
     def __init__(self, args):
 
@@ -211,8 +218,9 @@ class TaskCLI(BaseCLI):
 
             # inv_file = conf_dir_path / "hosts"  # если нужно, можно убрать, т.к. инвентарь в nornir
             task_file = Path(conf_dir_path) / self.args.task
-
+            # save_config(nr.run())
             start_task(str(task_file), nr, self.args.debug)
+            
             # start_task(conf_dir_path + task_file, conf_dir_path + inv_file)
 
         except FileNotFoundError as e:

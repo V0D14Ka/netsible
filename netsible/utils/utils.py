@@ -2,6 +2,7 @@ import errno
 import os
 import time
 from pathlib import Path
+from netmiko import ConnectHandler, NetmikoTimeoutException
 import yaml
 
 import ping3
@@ -95,6 +96,16 @@ def init_dir():
             Display.warning("Failed to create the directory '%s':" % inventory_dir)
     else:
         Display.debug("Created the '%s' directory" % inventory_dir)
+    
+    # current_configs
+    try:
+        cur_conf_dir = inventory_dir / "cur_configs"
+        cur_conf_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        if exc.errno != errno.EEXIST:
+            Display.warning("Failed to create the directory '%s':" % inventory_dir)
+    else:
+        Display.debug("Created the '%s' directory" % inventory_dir)
 
     # files
     files_to_create = [(inventory_dir / "hosts.yaml"), 
@@ -120,3 +131,43 @@ inventory:
         else:
             Display.debug(f"File already exists: {path}")
 
+def save_config(hostname: str, config: str, config_type: str):
+    """
+    config_type: "current_cfgs" или "last_cfgs"
+    """
+    base_dir = get_default_dir() / "inventory" / config_type
+    file_path = base_dir / f"{hostname}.cfg"
+    file_path.write_text(config)
+    return file_path
+
+
+def ssh_connect_and_execute(device_type, hostname, user, password, command, keyfile=None, port=22):
+    try:
+        device = {
+            'device_type': device_type,
+            'host': hostname,
+            'port': port,
+            'username': user,
+            'password': password,
+        }
+
+        connection = ConnectHandler(**device)
+        out = connection.send_command(command)
+        connection.disconnect()
+
+        return out
+    except Exception as e:
+        raise e
+
+
+def backup_config(hosts_list):
+    for host in hosts_list:
+            try:
+                output = ssh_connect_and_execute(device_type=host.platform, hostname=host.hostname,
+                                                user=host.username, password=str(host.password), command="export")
+                if output:
+                    save_config(host.name, output, "cur_configs")
+                    return
+
+            except NetmikoTimeoutException as e:
+                Display.warning("Can't connect to the target.")
