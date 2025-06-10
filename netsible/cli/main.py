@@ -29,8 +29,8 @@ def ssh_connect_and_execute(device_type, hostname, user, password, command, keyf
 
 def task(client_info, command='uptime'):
     try:
-        output = ssh_connect_and_execute(device_type=client_info['type'], hostname=client_info['host'],
-                                         user=client_info['user'], password=client_info['pass'], command=command)
+        output = ssh_connect_and_execute(device_type=client_info['platform'], hostname=client_info['hostname'],
+                                         user=client_info['username'], password=str(client_info['password']), command=command)
 
         if output:
             Display.success(output)
