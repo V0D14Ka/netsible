@@ -21,7 +21,6 @@ if jinja2_version < "3.0.0":
 class BaseCLI:
     @classmethod
     def cli_start(cls, args=None):
-
         try:
             init_dir()
             try:
