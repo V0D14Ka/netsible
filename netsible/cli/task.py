@@ -174,7 +174,7 @@ def validate_backup_and_run(tasks_to_run: list, hosts_name: str, sensitivity: bo
         if status_code != 200:
             if isinstance(failed_hosts, list):
                 for fh in failed_hosts:
-                    Display.warning(f"Error'{fh.name}' for backup.")
+                    Display.warning(f"Error '{fh.name}' for backup.")
             Display.error("Failed to backup all hosts. Use --nobackup to skip this step.")
             return
         Display.debug("Backup successful")if debug else None
