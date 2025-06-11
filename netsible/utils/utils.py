@@ -160,14 +160,34 @@ def ssh_connect_and_execute(device_type, hostname, user, password, command, keyf
         raise e
 
 
+from concurrent.futures import ThreadPoolExecutor, as_completed
+
 def backup_config(hosts_list):
-    for host in hosts_list:
+    failed_hosts = []
+
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        future_to_host = {
+            executor.submit(
+                ssh_connect_and_execute,
+                device_type=host.platform,
+                hostname=host.hostname,
+                user=host.username,
+                password=str(host.password),
+                command="export"
+            ): host for host in hosts_list
+        }
+
+        for future in as_completed(future_to_host):
+            host = future_to_host[future]
             try:
-                output = ssh_connect_and_execute(device_type=host.platform, hostname=host.hostname,
-                                                user=host.username, password=str(host.password), command="export")
+                output = future.result()
                 if output:
                     save_config(host.name, output, "cur_configs")
-                    return
+                else:
+                    failed_hosts.append(host)
+            except NetmikoTimeoutException:
+                failed_hosts.append(host)
 
-            except NetmikoTimeoutException as e:
-                Display.warning("Can't connect to the target.")
+    if failed_hosts:
+        return 401, failed_hosts  # Есть ошибки
+    return 200, None  # Все успешно
