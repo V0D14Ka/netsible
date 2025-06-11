@@ -168,6 +168,7 @@ def validate_backup_and_run(tasks_to_run: list, hosts_name: str, sensitivity: bo
     
     # Backup part
     if not nobackup:
+        # TODO добавить сравнение полученного конфига с уже существующим, чтобы лишний раз не перезаписывать файл
         Display.debug("Starting backup")if debug else None
 
         status_code, failed_hosts = backup_config(hosts_list, METHODS)
