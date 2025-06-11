@@ -10,6 +10,7 @@ from colorama import Fore, Style
 from pathlib import Path
 
 
+
 class Display:
     @staticmethod
     def debug(msg: str, host: str | None = None) -> None:
@@ -162,20 +163,35 @@ def ssh_connect_and_execute(device_type, hostname, user, password, command, keyf
 
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-def backup_config(hosts_list):
+def backup_config(hosts_list, METHODS):
     failed_hosts = []
-
+    future_to_host = {}
+    
     with ThreadPoolExecutor(max_workers=5) as executor:
-        future_to_host = {
-            executor.submit(
+        for host in hosts_list:
+            
+            platform = METHODS.get(host.platform)
+            if platform is None:
+                Display.error(f"Unsupported OS '{platform}'.")
+                return
+
+            try:
+                cmd = platform.get("config")
+            except:
+                Display.error(f"Method 'config' is not in the list of available methods for "
+                              f"'{platform}'.")
+                failed_hosts.append(host)
+                continue
+                
+            future = executor.submit(
                 ssh_connect_and_execute,
                 device_type=host.platform,
                 hostname=host.hostname,
                 user=host.username,
                 password=str(host.password),
-                command="export"
-            ): host for host in hosts_list
-        }
+                command=cmd)
+            
+            future_to_host[future] = host
 
         for future in as_completed(future_to_host):
             host = future_to_host[future]

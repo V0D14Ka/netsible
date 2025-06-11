@@ -9,7 +9,7 @@ from nornir.core import Nornir
 
 import yaml
 from netsible.cli import BaseCLI
-from netsible.cli.config import version as ver
+from netsible.cli.config import METHODS, version as ver
 from netsible.cli.config import MODULES
 
 from netsible.utils.utils import backup_config, init_dir, ping_ip, get_default_dir, Display, save_config, ssh_connect_and_execute
@@ -118,10 +118,10 @@ def run_tasks_for_host(host_task: list, debug: bool, sensitivity: bool):
         if status_code == 200:
             continue
         elif status_code == 401:
-            Display.error(f"Unable to connect - '{task["client_info"]["name"]}', aborting remaining tasks for this (sensitivity = yes)")
+            Display.error(f'Unable to connect - {task["client_info"]["name"]}, aborting remaining tasks for this (sensitivity = yes)')
             return
         else:
-            Display.error(f"Failed task on '{task["client_info"]["name"]}', skipping (sensitivity = no)")
+            Display.error(f'Failed task on "{task["client_info"]["name"]}", skipping (sensitivity = no)')
             problems = True
 
     return 400 if problems else 200
@@ -170,13 +170,14 @@ def validate_backup_and_run(tasks_to_run: list, hosts_name: str, sensitivity: bo
     if not nobackup:
         Display.debug("Starting backup")if debug else None
 
-        status_code, failed_hosts = backup_config(hosts_list)
+        status_code, failed_hosts = backup_config(hosts_list, METHODS)
         if status_code != 200:
             if isinstance(failed_hosts, list):
                 for fh in failed_hosts:
-                    Display.warning(f"Can't connect to the target '{fh.name}' for backup.")
+                    Display.warning(f"Error'{fh.name}' for backup.")
             Display.error("Failed to backup all hosts. Use --nobackup to skip this step.")
             return
+        Display.debug("Backup successful")if debug else None
     
     # Launch part (async per host)
     Display.debug("Starting parallel task execution") if debug else None
