@@ -1,18 +1,18 @@
-import argparse
 from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
-
-from jinja2 import Environment, FileSystemLoader
 from netmiko import ConnectHandler, NetmikoTimeoutException
-from netsible.utils.nornir_loader import load_nornir
 from nornir.core import Nornir
 
 import yaml
-from netsible.cli import BaseCLI
-from netsible.cli.config import METHODS, version as ver
+from netsible.cli.config import METHODS
 from netsible.cli.config import MODULES
 
-from netsible.utils.utils import backup_config, init_dir, ping_ip, get_default_dir, Display, save_config, ssh_connect_and_execute
+from netsible.utils.module_generator import create_module
+from netsible.utils.utils import backup_config, Display
+
+from netsible.cli.config import METHODS
+from netsible.utils.nornir_loader import load_nornir
+from netsible.utils.utils import Display, get_default_dir, ping_ip
 
 
 def start_task(file_path: str, nr: Nornir, debug: bool = False, nobackup: bool = False): # type: ignore
@@ -46,7 +46,7 @@ def parse_yaml(file_path: str, nr: Nornir, debug: bool):
 
         hosts_list = []
 
-         # Это хост
+        # Это хост
         if hosts_name in nr.inventory.hosts:
             hosts_list.append(nr.inventory.hosts[hosts_name])
         
@@ -199,73 +199,76 @@ def validate_backup_and_run(tasks_to_run: list, hosts_name: str, sensitivity: bo
             elif result == 200:
                 Display.success("All tasks completed successful")
 
+def ssh_connect_and_execute(device_type, hostname, user, password, command, keyfile=None, port=22):
+    try:
+        device = {
+            'device_type': device_type,
+            'host': hostname,
+            'port': port,
+            'username': user,
+            'password': password,
+        }
 
-        
-class TaskCLI(BaseCLI):
-    def __init__(self, args):
+        connection = ConnectHandler(**device)
+        out = connection.send_command(command)
+        connection.disconnect()
 
-        if not args:
-            raise ValueError('A non-empty list for args is required')
+        return out
+    except Exception as e:
+        raise e
 
-        self.args = args
-        self.parser = None
 
-    def parse(self):
-        self.parser = argparse.ArgumentParser(description='Netsible-task Command Line Tool')
-        self.parser.add_argument('-v', '--version', action='version', version=ver)
-        self.parser.add_argument('-t', '--task', required=True,
-                                 type=str, help='path to file with task')
-        self.parser.add_argument('-p', '--path', type=str, help='custom netsible dir path')
-        self.parser.add_argument('--debug', action='store_true', help='enable debug mode')
-        self.parser.add_argument('--nobackup', action='store_true', help='skip backup')
+def task(client_info, command='uptime'):
+    try:
+        output = ssh_connect_and_execute(device_type=client_info['platform'], hostname=client_info['hostname'],
+                                         user=client_info['username'], password=str(client_info['password']), command=command)
 
-        self.args = self.parser.parse_args(self.args[1:])
+        if output:
+            Display.success(output)
 
-    def run(self):
-        self.parse()
-        Display.debug("starting run") if self.args.debug else None
+    except NetmikoTimeoutException as e:
+        Display.warning("Can't connect to the target.")
 
-        conf_dir_path = self.args.path if self.args.path is not None else str(get_default_dir())
+def netsible_core(args):
+    nr = load_nornir(get_default_dir() / "config.yaml")
+    if args.host in nr.inventory.hosts:
+        client_info = {
+                    'name': nr.inventory.hosts[args.host].name,
+                    'hostname': nr.inventory.hosts[args.host].hostname,
+                    'username': nr.inventory.hosts[args.host].username,
+                    'password': nr.inventory.hosts[args.host].password,
+                    'platform': nr.inventory.hosts[args.host].platform,
+                    'host': nr.inventory.hosts[args.host].hostname,
+                            # ... другие параметры, если нужны
+                }
+        Display.debug(f"Method: '{args.method}', host info: '{client_info}'") if args.debug else None
+    else:
+        Display.error(f"Host '{args.host} does not exist")
+        return
 
-        try:
-            # inv_file = r"\hosts.txt" if platform.system() == 'Windows' else r"/hosts"
-            # task_file = fr"\{self.args.task}" if platform.system() == 'Windows' else fr"/{self.args.task}"
-            # инициализация nornir из config.yaml
-            nr = load_nornir(get_default_dir() / "config.yaml")
-
-            # inv_file = conf_dir_path / "hosts"  # если нужно, можно убрать, т.к. инвентарь в nornir
-            task_file = Path(conf_dir_path) / self.args.task
-            # save_config(nr.run())
-            start_task(file_path=str(task_file), nr=nr, debug=self.args.debug, nobackup=self.args.nobackup)
             
-            # start_task(conf_dir_path + task_file, conf_dir_path + inv_file)
-
-        except FileNotFoundError as e:
-            Display.error(f'The path {conf_dir_path} is missing or empty, make sure you have created needed files.')
+    if args.method == 'ping':
+        ping_ip(client_info)
+    else:
+        cmd = METHODS.get(client_info['platform'])
+        if cmd is None:
+            Display.error(f"Unsupported OS '{client_info['platform']}'.")
             return
 
+        try:
+            cmd = cmd.get(args.method)
+            task(client_info, cmd)
+        except:
+            Display.error(f"Method '{args.method}' is not in the list of available methods for "
+                                  f"'{client_info['platform']}'.")
+            return
+                
 
-def main(args=None):
-    TaskCLI.cli_start(args)
-
-
-from nornir.core.task import Task, Result
-
-def ping_task(task: Task) -> Result:
-    import os
-    response = ping_ip(task.host.hostname, True)
-
-    return Result(
-        host=task.host,
-        result=response,
-        changed=False,
-    )
-
-if __name__ == "__main__":
+def netsible_task_core(args):
+    conf_dir_path = args.path if args.path is not None else str(get_default_dir())
     nr = load_nornir(get_default_dir() / "config.yaml")
-    # results = nr.run(task=ping_task)
+    task_file = Path(conf_dir_path) / args.task
+    start_task(file_path=str(task_file), nr=nr, debug=args.debug, nobackup=args.nobackup)
 
-    # for host, result in results.items():
-    #     print(f"{host}: {result.result}")
-    # ping_ip('ya.ru', True)
-    print(parse_yaml((get_default_dir()) / "task.yaml.txt", nr))
+def netsible_tools_core(args):
+    create_module(args.newmodule)

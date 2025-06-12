@@ -1,3 +1,4 @@
+from netsible.core.module_loader import load_custom_modules
 from netsible.modules.updateint import UpdateInt
 from netsible.modules.ospf import Ospf
 from netsible.modules.bgp import Bgp
@@ -49,3 +50,5 @@ MODULES = {
     #     "module_templates": ["mikrotik_routeros", "junos", "eos", "nxos"],  # дополни при необходимости
     # },
 }
+
+MODULES.update(load_custom_modules())

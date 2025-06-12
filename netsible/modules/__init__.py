@@ -14,6 +14,9 @@ class BasicModule:
         dict_params = ["int", "cmd"]
         return dict_params
 
+    def print_cfg(self):
+        return
+
     def run(self, **kwargs):
         self.task_name = kwargs['task_name']
         self.client_info = kwargs['client_info']
