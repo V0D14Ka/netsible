@@ -1,5 +1,7 @@
 import errno
 import os
+import pprint
+import textwrap
 import time
 from pathlib import Path
 from netmiko import ConnectHandler, NetmikoTimeoutException
@@ -51,6 +53,25 @@ def ping_ip(client_info, only_ip=False):
 
     Display.success(f"Ping successful. Round-trip time: {result} ms")
 
+def print_modules_info(MODULES):
+    output = "List of available modules:\n"
+
+    for name, data in MODULES.items():
+        cls = data.get("class")
+        cls_name = cls.__name__ if cls else "—"
+
+        params = ", ".join(data.get("dict_params", []))
+        templates = ", ".join(data.get("module_templates", []))
+
+        output += f"""
+Module: {name}
+├─ Class     : {cls_name}
+├─ Params    : {params}
+└─ OS        : {templates}
+"""
+
+    Display.success(output)
+
 #DEPRECATED
 def find_client_info(client_name, file_path):
     with open(file_path, 'r') as file:
@@ -86,6 +107,16 @@ def init_dir():
             Display.warning("Failed to create the directory '%s':" % netsible_dir)
     else:
         Display.debug("Created the '%s' directory" % netsible_dir)
+
+    # modules dir
+    try:
+        modules_dir = netsible_dir / "modules"
+        modules_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        if exc.errno != errno.EEXIST:
+            Display.warning("Failed to create the directory '%s':" % modules_dir)
+    else:
+        Display.debug("Created the '%s' directory" % modules_dir)
             
 
     # inventory

@@ -4,13 +4,13 @@ from netmiko import ConnectHandler, NetmikoTimeoutException
 from nornir.core import Nornir
 
 import yaml
-from netsible.cli.config import METHODS
-from netsible.cli.config import MODULES
+from netsible.core.config import METHODS
+from netsible.core.config import MODULES
 
 from netsible.utils.module_generator import create_module
-from netsible.utils.utils import backup_config, Display
+from netsible.utils.utils import backup_config, Display, print_modules_info
 
-from netsible.cli.config import METHODS
+from netsible.core.config import METHODS
 from netsible.utils.nornir_loader import load_nornir
 from netsible.utils.utils import Display, get_default_dir, ping_ip
 
@@ -271,4 +271,7 @@ def netsible_task_core(args):
     start_task(file_path=str(task_file), nr=nr, debug=args.debug, nobackup=args.nobackup)
 
 def netsible_tools_core(args):
-    create_module(args.newmodule)
+    if args.modulelist:
+        print_modules_info(MODULES)
+    else:
+        create_module(args.newmodule)
