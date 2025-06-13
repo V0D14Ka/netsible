@@ -99,12 +99,10 @@ def parse_yaml(file_path: str, nr: Nornir, debug: bool):
 def run_tasks_for_host(host_task: list, debug: bool, sensitivity: bool, path_to_conf: dict):
     problems = False
     for task in host_task:
-        print(task['params'])
         Display.debug(
             f"Running task '{task['task_name']}' on '{task['client_info']['name']}' "
             f"using module '{task['module']}' with params {task['params']}"
         ) if debug else None
-        print(task['params'])
 
         module_class = MODULES.get(task['module'], {}).get("class")
         if not module_class:
