@@ -197,6 +197,7 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 def backup_config(hosts_list, METHODS):
     failed_hosts = []
     future_to_host = {}
+    path_to_conf = {}
     
     with ThreadPoolExecutor(max_workers=5) as executor:
         for host in hosts_list:
@@ -229,12 +230,12 @@ def backup_config(hosts_list, METHODS):
             try:
                 output = future.result()
                 if output:
-                    save_config(host.name, output, "cur_configs")
+                    path_to_conf[host.name] = save_config(host.name, output, "cur_configs")
                 else:
                     failed_hosts.append(host)
             except NetmikoTimeoutException:
                 failed_hosts.append(host)
 
     if failed_hosts:
-        return 401, failed_hosts  # Есть ошибки
-    return 200, None  # Все успешно
+        return 401, failed_hosts, path_to_conf  # Есть ошибки
+    return 200, None, path_to_conf  # Все успешно

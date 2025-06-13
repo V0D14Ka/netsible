@@ -1,4 +1,5 @@
 from concurrent.futures import ThreadPoolExecutor, as_completed
+import copy
 from pathlib import Path
 from netmiko import ConnectHandler, NetmikoTimeoutException
 from nornir.core import Nornir
@@ -70,6 +71,7 @@ def parse_yaml(file_path: str, nr: Nornir, debug: bool):
                 'name': host_obj.name,
                 'hostname': host_obj.hostname,
                 'username': host_obj.username,
+                'port': host_obj.port,
                 'password': str(host_obj.password),
                 'platform': host_obj.platform,
                 'host': host_obj.hostname,
@@ -94,28 +96,35 @@ def parse_yaml(file_path: str, nr: Nornir, debug: bool):
         # backup_config(hosts_list)
         return tasks_to_run, hosts_name, sensitivity, hosts_list
 
-def run_tasks_for_host(host_task: list, debug: bool, sensitivity: bool):
+def run_tasks_for_host(host_task: list, debug: bool, sensitivity: bool, path_to_conf: dict):
     problems = False
     for task in host_task:
+        print(task['params'])
         Display.debug(
             f"Running task '{task['task_name']}' on '{task['client_info']['name']}' "
             f"using module '{task['module']}' with params {task['params']}"
         ) if debug else None
+        print(task['params'])
 
         module_class = MODULES.get(task['module'], {}).get("class")
         if not module_class:
             Display.error(f"Unknown module '{task['module']}'")
             continue
 
-        status_code = module_class().run(
-            task_name=task["task_name"],
-            client_info=task["client_info"],
-            module=task["module"],
-            params=task["params"],
-            sensitivity=sensitivity
-        )
+        module_class = module_class(task_name=copy.deepcopy(task["task_name"]),
+                                    client_info=copy.deepcopy(task["client_info"]),
+                                    module=copy.deepcopy(task["module"]),
+                                    params=copy.deepcopy(task["params"]),
+                                    sensitivity=sensitivity,
+                                    path_to_conf=path_to_conf)
+        
+        output, cmd = module_class.prepare()
+        # TODO добавить сравнение полученного конфига с уже существующим, чтобы лишний раз не перезаписывать файл
+        status_code, output = module_class.run()
 
         if status_code == 200:
+            Display.success(f"-------------- Device {task['client_info']['hostname']} --------------\n {output}\n -------------- "
+                            f"END --------------")
             continue
         elif status_code == 401:
             Display.error(f'Unable to connect - {task["client_info"]["name"]}, aborting remaining tasks for this (sensitivity = yes)')
@@ -128,7 +137,6 @@ def run_tasks_for_host(host_task: list, debug: bool, sensitivity: bool):
 
 
 def validate_backup_and_run(tasks_to_run: list, hosts_name: str, sensitivity: bool, debug: bool, hosts_list: list, nobackup: bool):
-    
     # Validation part
     Display.debug("Starting validation loop")if debug else None
     for host_task in tasks_to_run:
@@ -165,13 +173,12 @@ def validate_backup_and_run(tasks_to_run: list, hosts_name: str, sensitivity: bo
             Display.debug("End task validation") if debug else None
     
     Display.debug("Success end validation loop")if debug else None
-    
+
     # Backup part
     if not nobackup:
-        # TODO добавить сравнение полученного конфига с уже существующим, чтобы лишний раз не перезаписывать файл
         Display.debug("Starting backup")if debug else None
 
-        status_code, failed_hosts = backup_config(hosts_list, METHODS)
+        status_code, failed_hosts, path_to_conf = backup_config(hosts_list, METHODS)
         if status_code != 200:
             if isinstance(failed_hosts, list):
                 for fh in failed_hosts:
@@ -188,7 +195,7 @@ def validate_backup_and_run(tasks_to_run: list, hosts_name: str, sensitivity: bo
 
         for host_task in tasks_to_run:
             futures.append(
-                executor.submit(run_tasks_for_host, host_task, debug, sensitivity)
+                executor.submit(run_tasks_for_host, host_task, debug, sensitivity, path_to_conf = None)
             )
 
         for future in as_completed(futures):

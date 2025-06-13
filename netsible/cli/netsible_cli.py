@@ -1,7 +1,7 @@
 import argparse
 
 from netsible.cli import BaseCLI
-from netsible.cli.config import version as ver
+from netsible.core.config import version as ver
 from netsible.core.core import netsible_core
 from netsible.utils.utils import Display, get_default_dir, ping_ip
 

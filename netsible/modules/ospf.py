@@ -50,9 +50,11 @@ module_template = {
 
 class Ospf(BasicModule):
 
-    def run(self, **kwargs):
-        super().run(**kwargs)
+    @staticmethod
+    def static_params():
+        return dict_params, module_template
 
+    def prepare(self):
         if self.client_info['platform'] == 'cisco_ios':
             for network in self.params.get('networks', []):
                 try:
@@ -76,45 +78,5 @@ class Ospf(BasicModule):
                 except ValueError:
                     continue
 
-        return self.ssh_connect_and_execute(self.client_info['platform'], self.client_info['hostname'],
-                                            self.client_info['username'], self.client_info['password'],
-                                            self.sensitivity)
+        return super().prepare()
 
-    @staticmethod
-    def static_params():
-        return dict_params, module_template
-
-    def ssh_connect_and_execute(self, device_type, hostname, user, password, sensitivity, command=None, keyfile=None,
-                                port=22):
-
-        try:
-            device = {
-                'device_type': device_type,
-                'host': hostname,
-                'port': port,
-                'username': user,
-                'password': password,
-                'secret': 'admin',  # Enable пароль, если он требуется
-                'verbose': True,  # включить вывод подробной информации о подключении
-            }
-
-            _, mt = self.static_params()
-            template = Template(mt.get(device_type))
-            output = template.render(self.params)
-            commands = [line for line in output.splitlines() if line.strip()]
-            print(commands)
-            print(sensitivity)
-
-            with ConnectHandler(**device) as net_connect:
-                net_connect.enable()
-                output = net_connect.send_config_set(commands)
-                Display.success(f"-------------- Device {device['host']} --------------\n {output}\n -------------- "
-                                f"END --------------")
-
-            return 200
-
-        except Exception as e:
-            if self.sensitivity == "yes":
-                return 401
-
-            return 402

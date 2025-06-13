@@ -3,7 +3,7 @@ import argparse
 from netsible.core.core import netsible_task_core
 
 from netsible.cli import BaseCLI
-from netsible.cli.config import version as ver
+from netsible.core.config import version as ver
 
 from netsible.utils.utils import get_default_dir, Display
 
