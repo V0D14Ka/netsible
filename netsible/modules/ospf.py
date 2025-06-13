@@ -53,7 +53,7 @@ class Ospf(BasicModule):
     def run(self, **kwargs):
         super().run(**kwargs)
 
-        if self.client_info['type'] == 'cisco_ios':
+        if self.client_info['platform'] == 'cisco_ios':
             for network in self.params.get('networks', []):
                 try:
                     cidr = int(network['subnet_mask'])
@@ -65,7 +65,7 @@ class Ospf(BasicModule):
                 except ValueError:
                     continue
 
-        elif self.client_info['type'] == 'mikrotik_routeros':
+        elif self.client_info['platform'] == 'mikrotik_routeros':
             for network in self.params.get('networks', []):
                 try:
                     area = int(network['area'])
@@ -76,8 +76,8 @@ class Ospf(BasicModule):
                 except ValueError:
                     continue
 
-        return self.ssh_connect_and_execute(self.client_info['type'], self.client_info['host'],
-                                            self.client_info['user'], self.client_info['pass'],
+        return self.ssh_connect_and_execute(self.client_info['platform'], self.client_info['hostname'],
+                                            self.client_info['username'], self.client_info['password'],
                                             self.sensitivity)
 
     @staticmethod
