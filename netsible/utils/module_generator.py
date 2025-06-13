@@ -18,19 +18,16 @@ module_template = {{
 
 class {class_name}(BasicModule):
 
-    def run(self, **kwargs):
-        super().run(**kwargs)
-        return self.ssh_connect_and_execute(
-            self.client_info['platform'],
-            self.client_info['hostname'],
-            self.client_info['username'],
-            self.client_info['password'],
-            self.sensitivity
-        )
-
     @staticmethod
     def static_params():
         return dict_params, module_template
+
+    def prepare(self):
+    
+        # Your code here
+    
+        return super().prepare()
+
 '''
 
 def create_module(module_name: str):
