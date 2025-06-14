@@ -6,14 +6,14 @@ from netsible.utils.utils import Display
 MODULE_TEMPLATE = '''from netsible.modules import BasicModule
 from jinja2 import Template
 
+dict_params = ["example_param"]
+
 template_example = """
-! Example configuration for {{ interface_name }}
+! Example configuration for {{{{ example_param }}}}
 """
 
-dict_params = ["interface_name", "description"]
-
 module_template = {{
-    "cisco_ios": template_example
+	"example_os": template_example
 }}
 
 class {class_name}(BasicModule):
@@ -30,9 +30,13 @@ class {class_name}(BasicModule):
 
 '''
 
-def create_module(module_name: str):
+
+def create_module(module_name: str, template: bool = False):
     module_dir = Path.home() / ".netsible" / "modules"
     module_dir.mkdir(parents=True, exist_ok=True)
+
+    template_dir = Path.home() / ".netsible" / "templates"
+    template_dir.mkdir(parents=True, exist_ok=True)
 
     filename = f"{module_name.lower()}.py"
     filepath = module_dir / filename
@@ -47,3 +51,14 @@ def create_module(module_name: str):
         f.write(MODULE_TEMPLATE.format(class_name=class_name))
 
     Display.success(f"Module '{module_name}' created in {filepath}")
+
+    if template:
+        template_filepath = template_dir / filename
+
+        if filepath.exists():
+            Display.error(f"Template '{module_name}' already exists in {template_filepath}")
+            return
+
+        template_filepath.touch()
+
+        Display.success(f"Template '{module_name}' created in {filepath}")

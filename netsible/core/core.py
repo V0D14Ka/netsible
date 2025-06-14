@@ -278,5 +278,8 @@ def netsible_task_core(args):
 def netsible_tools_core(args):
     if args.modulelist:
         print_modules_info(MODULES)
-    else:
+    elif args.newmodule:
         create_module(args.newmodule)
+    elif args.newmoduletemplate:
+        create_module(args.newmodule, True)
+    

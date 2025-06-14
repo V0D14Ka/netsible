@@ -19,7 +19,8 @@ class NetsibleToolsCLI(BaseCLI):
         self.parser = argparse.ArgumentParser(description='Netsible-Tool Command Line Tool')
 
         self.parser.add_argument('-v', '--version', action='version', version=ver)
-        self.parser.add_argument('--newmodule', help='creates a template for module')
+        self.parser.add_argument('--newmodule', help='creates a template for module with plug-in jinja')
+        self.parser.add_argument('--newmoduletemplate', help='creates a template for module with separate jinja')
         self.parser.add_argument('-p', '--path', type=str, help='custom config dir path')
         self.parser.add_argument('--modulelist', action='store_true', help='gives a list of available modules')
         self.parser.add_argument('--debug', action='store_true', help='enable debug mode')

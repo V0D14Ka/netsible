@@ -54,8 +54,6 @@ class BasicModule:
             with ConnectHandler(**self.device) as net_connect:
                 net_connect.enable()
                 output = net_connect.send_config_set(self.commands)
-                # Display.success(f"-------------- Device {self.device['hostname']} --------------\n {output}\n -------------- "
-                #                 f"END --------------")
 
             return 200, output
 
