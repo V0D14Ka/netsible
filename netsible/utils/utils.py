@@ -146,9 +146,9 @@ def init_dir():
         cur_conf_dir.mkdir(parents=True, exist_ok=True)
     except OSError as exc:
         if exc.errno != errno.EEXIST:
-            Display.warning("Failed to create the directory '%s':" % inventory_dir)
+            Display.warning("Failed to create the directory '%s':" % cur_conf_dir)
     else:
-        Display.debug("Created the '%s' directory" % inventory_dir)
+        Display.debug("Created the '%s' directory" % cur_conf_dir)
 
     # files
     files_to_create = [(inventory_dir / "hosts.yaml"), 
