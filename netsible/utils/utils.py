@@ -118,6 +118,16 @@ def init_dir():
             Display.warning("Failed to create the directory '%s':" % modules_dir)
     else:
         Display.debug("Created the '%s' directory" % modules_dir)
+
+    # templates dir
+    try:
+        templates_dir = netsible_dir / "templates"
+        templates_dir.mkdir(parents=True, exist_ok=True)
+    except OSError as exc:
+        if exc.errno != errno.EEXIST:
+            Display.warning("Failed to create the directory '%s':" % templates_dir)
+    else:
+        Display.debug("Created the '%s' directory" % templates_dir)
             
 
     # inventory
