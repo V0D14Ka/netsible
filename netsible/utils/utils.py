@@ -97,7 +97,6 @@ def init_dir():
     if initialized_flag.exists():
         return
             
-    initialized_flag.touch()
             
     # main dir 
     try:
@@ -107,6 +106,8 @@ def init_dir():
             Display.warning("Failed to create the directory '%s':" % netsible_dir)
     else:
         Display.debug("Created the '%s' directory" % netsible_dir)
+
+    initialized_flag.touch()
 
     # modules dir
     try:
