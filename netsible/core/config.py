@@ -7,14 +7,15 @@ from netsible.modules.mnapalm import NapalmGetFacts
 version = "Netsible 0.1 beta"
 
 METHODS = {
-    'cisco_ios': {'int': 'sh ip int br',
+    'cisco_ios': {'int': 'sh int',
+                  'ip': 'sh ip int br',
                   'vlan': 'sh vlan br',
                   'route': 'sh ip route',
                   'lldp': 'sh lldp neighbors',
                   'config': 'sh running-config',
                   'system': 'sh version'
                   },
-    'mikrotik_routeros': {'int': '/interface ethernet pr',
+    'mikrotik_routeros': {'int': '/interface ethernet pr detail',
                           'ip': '/ip address pr',
                           'vlan': '/interface vlan pr',
                           'route': '/ip route pr',
