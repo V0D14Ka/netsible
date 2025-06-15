@@ -15,7 +15,8 @@ METHODS = {
                   'lldp': 'sh lldp neighbors',
                   'config': 'sh running-config',
                   'system': 'sh version',
-                  'ospf-neighbor': 'sh ip ospf neighbor'
+                  'ospf-neighbor': 'sh ip ospf neighbor',
+                  'bgp-neighbor': 'show ip bgp summary'
                   },
     'mikrotik_routeros': {'int': '/interface ethernet pr',
                           'int-detail': '/interface ethernet pr detail',
@@ -24,7 +25,8 @@ METHODS = {
                           'route': '/ip route pr',
                           'config': 'export',
                           'system': '/system resource print',
-                          'ospf-neighbor': '/routing ospf neighbor pr'
+                          'ospf-neighbor': '/routing ospf neighbor pr', 
+                          'bgp-neighbor': '/routing bgp peer print'
                           },
     'linux': {'int': 'ifconfig',
               'uptime': 'uptime',
