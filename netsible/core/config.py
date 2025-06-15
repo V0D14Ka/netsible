@@ -14,7 +14,8 @@ METHODS = {
                   'route': 'sh ip route',
                   'lldp': 'sh lldp neighbors',
                   'config': 'sh running-config',
-                  'system': 'sh version'
+                  'system': 'sh version',
+                  'ospf-neighbor': 'sh ip ospf neighbor'
                   },
     'mikrotik_routeros': {'int': '/interface ethernet pr',
                           'int-detail': '/interface ethernet pr detail',
@@ -22,7 +23,8 @@ METHODS = {
                           'vlan': '/interface vlan pr',
                           'route': '/ip route pr',
                           'config': 'export',
-                          'system': '/system resource print'
+                          'system': '/system resource print',
+                          'ospf-neighbor': '/routing ospf neighbor pr'
                           },
     'linux': {'int': 'ifconfig',
               'uptime': 'uptime',
